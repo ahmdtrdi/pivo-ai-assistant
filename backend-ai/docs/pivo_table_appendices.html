@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56; --teal-800: #085041;
+    --purple-50: #EEEDFE; --purple-100: #CECBF6; --purple-600: #534AB7; --purple-800: #3C3489;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-600: #854F0B;
+    --coral-50: #FAECE7; --coral-100: #F5C4B3; --coral-600: #993C1D;
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5;
+    --green-50: #EAF3DE; --green-100: #C0DD97; --green-600: #3B6D11;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-400: #888780; --gray-600: #5F5E5A; --gray-800: #2C2C2A;
+    --bg: #FFFFFF; --border: #E2E0D8;
+  }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; background: #FFFFFF; color: var(--gray-800); padding: 28px 32px 36px; }
+  .page { max-width: 820px; margin: 0 auto; }
+
+  .doc-header { margin-bottom: 24px; padding-bottom: 14px; border-bottom: 2px solid var(--teal-400); display: flex; align-items: flex-end; justify-content: space-between; }
+  .doc-wordmark { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.1em; color: var(--teal-400); text-transform: uppercase; margin-bottom: 3px; }
+  .doc-title { font-size: 16px; font-weight: bold; color: var(--gray-800); }
+  .doc-subtitle { font-size: 11px; color: var(--gray-400); font-style: italic; margin-top: 2px; }
+  .doc-label { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gray-400); white-space: nowrap; }
+
+  .table-section { margin-bottom: 28px; }
+  .table-title { font-size: 13px; font-weight: bold; margin-bottom: 3px; color: var(--gray-800); }
+  .table-caption { font-size: 11px; color: var(--gray-400); font-style: italic; margin-bottom: 8px; line-height: 1.4; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { text-align: left; padding: 7px 9px; font-weight: bold; font-size: 10px; letter-spacing: 0.03em; }
+  td { padding: 7px 9px; border-bottom: 0.5px solid var(--border); vertical-align: top; line-height: 1.45; font-size: 11px; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: 'Courier New', monospace; font-size: 10px; background: var(--gray-50); padding: 1px 4px; border-radius: 2px; color: var(--purple-600); }
+
+  .th-amber  { background: var(--amber-600);  color: white; }
+  .th-purple { background: var(--purple-600); color: white; }
+  .th-teal   { background: var(--teal-400);   color: white; }
+  .th-coral  { background: var(--coral-600);  color: white; }
+  .th-blue   { background: var(--blue-600);   color: white; }
+
+  .tier-red    { background: #FCEBEB; }
+  .tier-yellow { background: var(--amber-50); }
+  .tier-green  { background: var(--green-50); }
+  .tier-red    td:first-child { color: #A32D2D; font-weight: bold; }
+  .tier-yellow td:first-child { color: var(--amber-600); font-weight: bold; }
+  .tier-green  td:first-child { color: var(--green-600); font-weight: bold; }
+  .row-alt { background: var(--gray-50); }
+
+  .badge { display: inline-block; font-family: 'Courier New', monospace; font-size: 10px; padding: 1px 6px; border-radius: 2px; margin: 1px 2px 1px 0; border: 1px solid var(--border); background: white; color: var(--gray-600); }
+  .badge-green  { background: var(--teal-50);   color: var(--teal-600);   border-color: var(--teal-100); }
+  .badge-purple { background: var(--purple-50); color: var(--purple-600); border-color: var(--purple-100); }
+  .badge-coral  { background: var(--coral-50);  color: var(--coral-600);  border-color: var(--coral-100); }
+  .badge-gray   { background: var(--gray-50);   color: var(--gray-600);   border-color: var(--gray-100); }
+
+  .section-head { font-size: 10px; font-weight: bold; color: var(--gray-400); font-family: 'Courier New', monospace; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 9px; background: var(--gray-50); border-bottom: 0.5px solid var(--border); border-top: 0.5px solid var(--border); }
+
+  .note-box { background: var(--gray-50); border-left: 3px solid var(--gray-200); padding: 7px 10px; font-size: 11px; color: var(--gray-600); font-style: italic; margin-top: 8px; border-radius: 0 4px 4px 0; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  .footer-note { margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--gray-400); font-family: 'Courier New', monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <div>
+      <div class="doc-wordmark">PIVO · AI Ready ASEAN Youth Challenge</div>
+      <div class="doc-title">Appendix B — Technical Reference Tables</div>
+      <div class="doc-subtitle">Confidence tiers · Forecasting outputs · Profit outputs · Prophet features · Missing data logic</div>
+    </div>
+    <div class="doc-label">Appendix B · Tables 1–5</div>
+  </div>
+
+  <!-- ── TABLE 1 ── -->
+  <div class="table-section">
+    <div class="table-title">Table 1 — AI confidence tier system (4-gate logic)</div>
+    <div class="table-caption">Each SKU starts at Green and degrades. Gates are checked in order — first failure sets the tier for that SKU.</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="th-amber" style="width:56px;">Tier</th>
+          <th class="th-amber">Gate 1: Data volume</th>
+          <th class="th-amber">Gate 2: Recency</th>
+          <th class="th-amber">Gate 3: Volatility (CV)</th>
+          <th class="th-amber">Gate 4: Interval width</th>
+          <th class="th-amber">System behaviour</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="tier-red">
+          <td>&#128308; Red</td>
+          <td>&lt; 7 unique sale dates</td>
+          <td>Last sale &gt; 14 days ago</td>
+          <td>—</td><td>—</td>
+          <td>No prediction. WA reminder: <em>"Data masih sedikit, terus catat ya!"</em></td>
+        </tr>
+        <tr class="tier-yellow">
+          <td>&#128993; Yellow</td>
+          <td>7–20 unique sale dates</td>
+          <td>Within 14 days</td>
+          <td>CV &gt; 2.0 (erratic)</td>
+          <td>Interval &gt; 2 × yhat</td>
+          <td>Prediction with caveat: <em>"Prediksi ini masih perkiraan awal."</em></td>
+        </tr>
+        <tr class="tier-green">
+          <td>&#128994; Green</td>
+          <td>21+ unique sale dates</td>
+          <td>Within 14 days</td>
+          <td>CV ≤ 2.0</td>
+          <td>Interval ≤ 2 × yhat</td>
+          <td>Full forecast + explanation + one concrete action.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note-box">Model fallback: if both Prophet MAPE and ARIMA MAPE exceed 40%, SKU is forced to Yellow regardless of data volume.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── TABLE 2 ── -->
+  <div class="table-section">
+    <div class="table-title">Table 2 — Forecasting outputs per SKU</div>
+    <div class="table-caption">All four outputs come from a single Prophet/ARIMA model fit per SKU. See Table 4 for the full list of input features used by the model.</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="th-purple" style="width:155px;">Output field</th>
+          <th class="th-purple" style="width:110px;">Source</th>
+          <th class="th-purple">Derivation</th>
+          <th class="th-purple" style="width:120px;">Surfaces in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>qty_predicted</code></td>
+          <td>Prophet / ARIMA</td>
+          <td><code>forecast['yhat']</code> — point estimate of units expected to sell tomorrow</td>
+          <td>WA production section</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>qty_low / qty_high</code></td>
+          <td>Prophet / ARIMA</td>
+          <td><code>yhat_lower</code> / <code>yhat_upper</code> — 80% confidence interval around the prediction</td>
+          <td>WA as range: "40–56 cup"</td>
+        </tr>
+        <tr>
+          <td><code>trend_direction</code></td>
+          <td>Prophet</td>
+          <td><code>forecast['trend']</code> delta vs 7 days prior. &gt;+5% = growing, &lt;−5% = declining, else stable</td>
+          <td>LLM tone, PWA chart</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>stockout_risk</code></td>
+          <td>Post-model rule</td>
+          <td><code>qty_predicted &gt; rolling_7d_sales × 1.15</code> — predicted demand exceeds typical prep by 15%</td>
+          <td>WA stockout alert ⚠️</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note-box">trend_direction and stockout_risk are derived after the model runs — not direct model outputs. stockout_risk uses rolling_7d_sales from Table 3 as its baseline.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── TABLE 3 ── -->
+  <div class="table-section">
+    <div class="table-title">Table 3 — Profit and analysis outputs per SKU</div>
+    <div class="table-caption">All outputs are deterministic arithmetic computed with pandas. No forecasting model involved. Runs in parallel with the forecasting loop across all active SKUs.</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="th-teal" style="width:155px;">Output field</th>
+          <th class="th-teal" style="width:200px;">Formula</th>
+          <th class="th-teal">Description</th>
+          <th class="th-teal" style="width:120px;">Surfaces in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>revenue</code></td>
+          <td><code>price × qty_sold</code></td>
+          <td>Total sales value per SKU per day</td>
+          <td>PWA KPI card</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>gross_profit</code></td>
+          <td><code>(price − cost) × qty_sold</code></td>
+          <td>Actual profit after ingredient cost, per SKU per day</td>
+          <td>WA top products, PWA</td>
+        </tr>
+        <tr>
+          <td><code>margin_pct</code></td>
+          <td><code>(price − cost) / price × 100</code></td>
+          <td>Percentage of revenue kept as profit — used to rank products</td>
+          <td>WA top products, PWA</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>rolling_7d_sales</code></td>
+          <td><code>avg(qty_sold, 7 days)</code></td>
+          <td>Smoothed demand baseline — also used in stockout_risk (Table 2)</td>
+          <td>Confidence guard, PWA</td>
+        </tr>
+        <tr>
+          <td><code>rolling_7d_profit</code></td>
+          <td><code>avg(gross_profit, 7 days)</code></td>
+          <td>Weekly profit trend per SKU</td>
+          <td>PWA KPI trend chart</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>margin_delta</code></td>
+          <td><code>margin_pct(week) − margin_pct(prev week)</code></td>
+          <td>Week-on-week margin change — negative signals cost creep</td>
+          <td>WA margin alert ⚠️</td>
+        </tr>
+        <tr>
+          <td><code>rank_gap</code></td>
+          <td><code>volume_rank − profit_rank</code></td>
+          <td>Gap ≥ 2 means owner is prioritising a high-volume but low-margin SKU</td>
+          <td>PWA dashboard insight</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>unsold_qty</code></td>
+          <td><code>qty_prepared − qty_sold</code></td>
+          <td>Units prepared but not sold — waste indicator per day</td>
+          <td>PWA waste tracker</td>
+        </tr>
+        <tr>
+          <td><code>sell_through_rate</code></td>
+          <td><code>qty_sold / qty_prepared × 100</code></td>
+          <td>% of prepared stock sold — low rate = consistent overproduction</td>
+          <td>PWA, WA if critically low</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note-box">qty_prepared is optional in Google Sheets. If not entered, unsold_qty and sell_through_rate are null for that day without affecting other outputs.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── TABLE 4 ── -->
+  <div class="table-section">
+    <div class="table-title">Table 4 — Prophet model features and regressors</div>
+    <div class="table-caption">Features marked "native" are handled automatically by Prophet. Features marked "regressor" must be added via <code>model.add_regressor()</code>. "Excluded" features cause data leakage or redundancy.</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="th-purple" style="width:140px;">Feature</th>
+          <th class="th-purple" style="width:110px;">Type</th>
+          <th class="th-purple">Description</th>
+          <th class="th-purple" style="width:90px;">PoC priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ds</code> (date)</td>
+          <td><span class="badge badge-green">native</span></td>
+          <td>Prophet's time index. Auto-extracts weekly/yearly seasonality and trend.</td>
+          <td>Required</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>y</code> (qty_sold)</td>
+          <td><span class="badge badge-green">target</span></td>
+          <td>What the model predicts. One model fit per active SKU.</td>
+          <td>Required</td>
+        </tr>
+        <tr>
+          <td><code>qty_lag_7</code></td>
+          <td><span class="badge badge-purple">regressor</span></td>
+          <td>Qty sold same day last week. Strongest single predictor for warung demand patterns.</td>
+          <td>Required</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>qty_lag_14</code></td>
+          <td><span class="badge badge-purple">regressor</span></td>
+          <td>Qty sold two weeks ago. Confirms whether last week's pattern was a fluke or consistent.</td>
+          <td>Recommended</td>
+        </tr>
+        <tr>
+          <td><code>rolling_mean_7</code></td>
+          <td><span class="badge badge-purple">regressor</span></td>
+          <td>7-day moving average of qty_sold. Smooths noise. Also used in stockout_risk.</td>
+          <td>Recommended</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>is_payday_week</code></td>
+          <td><span class="badge badge-purple">regressor</span></td>
+          <td>1 if date falls in days 25–2 of month (Indonesian gajian cycle). Demand spikes at month-end.</td>
+          <td>Required</td>
+        </tr>
+        <tr>
+          <td><code>price_changed</code></td>
+          <td><span class="badge badge-purple">regressor</span></td>
+          <td>1 if unit_price changed vs yesterday. Captures demand sensitivity to price changes.</td>
+          <td>Recommended</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>is_promo_day</code></td>
+          <td><span class="badge badge-purple">regressor</span></td>
+          <td>Owner-reported discount or event day. Optional column in Google Sheet.</td>
+          <td>Optional</td>
+        </tr>
+        <tr>
+          <td><code>day_of_week</code></td>
+          <td><span class="badge badge-gray">built-in</span></td>
+          <td>Prophet extracts from <code>ds</code> automatically. Do not add as a manual column — double-counts the signal.</td>
+          <td>Do not add</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>revenue</code></td>
+          <td><span class="badge badge-coral">excluded</span></td>
+          <td>Derived from price × qty — leaks the target variable into the model.</td>
+          <td>Excluded</td>
+        </tr>
+        <tr>
+          <td><code>unit_price</code> (raw)</td>
+          <td><span class="badge badge-coral">excluded</span></td>
+          <td>Multicollinear with price_changed. Use price_changed instead.</td>
+          <td>Excluded</td>
+        </tr>
+        <tr class="row-alt">
+          <td><code>qty_lag_0</code></td>
+          <td><span class="badge badge-coral">excluded</span></td>
+          <td>Today's actual sales — not available at prediction time. Data leakage.</td>
+          <td>Excluded</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note-box">Start with <code>ds</code> + <code>y</code> + <code>qty_lag_7</code> + <code>is_payday_week</code> only. Add regressors incrementally as data grows — more features on sparse data degrades accuracy.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── TABLE 5 ── -->
+  <div class="table-section">
+    <div class="table-title">Table 5 — Missing data behaviour by consecutive days without input</div>
+    <div class="table-caption">The system never goes silent. Every nightly run produces either a prediction or a reminder message.</div>
+    <table>
+      <thead>
+        <tr>
+          <th class="th-coral" style="width:120px;">Days without data</th>
+          <th class="th-coral">Prediction behaviour</th>
+          <th class="th-coral">Confidence tier effect</th>
+          <th class="th-coral">WA message sent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0 (data received)</td>
+          <td>Normal pipeline runs</td>
+          <td>No change — tier by 4-gate logic</td>
+          <td>Normal daily insight message</td>
+        </tr>
+        <tr class="row-alt">
+          <td>1–2 days</td>
+          <td>Predict using last known data</td>
+          <td>No automatic downgrade yet</td>
+          <td>Insight + gentle reminder: <em>"Jangan lupa catat penjualan hari ini ya!"</em></td>
+        </tr>
+        <tr>
+          <td>3–6 days</td>
+          <td>Continue with stale data</td>
+          <td>Downgrade 1 tier level</td>
+          <td>Reminder first, prediction appended with data-staleness caveat</td>
+        </tr>
+        <tr class="row-alt">
+          <td>7+ days</td>
+          <td>No prediction issued</td>
+          <td>Force Red regardless of history</td>
+          <td>Warm reminder only. NGO facilitator also notified.</td>
+        </tr>
+        <tr>
+          <td>Data resumes</td>
+          <td>Pipeline resumes next nightly run</td>
+          <td>Tier recalculated via 4-gate logic</td>
+          <td>Normal insight + <em>"Makasih sudah catat lagi!"</em></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note-box">Gate 3 (last sale &gt; 14 days → force Red) interacts with this table: an owner who stops for 14+ days hits Red via Gate 3 before the 7-day rule triggers.</div>
+  </div>
+
+  <div class="footer-note">
+    <span>PIVO · AI-Based Solution · Appendix B, Tables 1–5</span>
+    <span>AI Ready ASEAN Youth Challenge 2025 · Indonesia</span>
+  </div>
+
+</div>
+</body>
+</html>

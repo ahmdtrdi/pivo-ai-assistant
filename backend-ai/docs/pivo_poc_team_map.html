@@ -1,0 +1,108 @@
+
+<style>
+.col-head { font-size: 13px; font-weight: 500; padding: 10px 14px; border-radius: var(--border-radius-md) var(--border-radius-md) 0 0; }
+.task-card { border-left: 1px solid var(--color-border-tertiary); border-right: 1px solid var(--color-border-tertiary); border-bottom: 1px solid var(--color-border-tertiary); padding: 9px 14px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.task-card:last-child { border-radius: 0 0 var(--border-radius-md) var(--border-radius-md); }
+.task-card strong { font-weight: 500; color: var(--color-text-primary); display: block; margin-bottom: 2px; }
+.task-card.alt { background: var(--color-background-secondary); }
+.contract-box { background: var(--color-background-secondary); border: 1px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; margin-top: 14px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+.contract-box strong { font-weight: 500; color: var(--color-text-primary); }
+.pill { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-family: var(--font-mono); border: 1px solid var(--color-border-tertiary); margin: 1px 2px 1px 0; color: var(--color-text-secondary); }
+.divider-label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); letter-spacing: 0.04em; text-transform: uppercase; text-align: center; margin: 14px 0 8px; }
+</style>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+  <div>
+    <div class="col-head" style="background:var(--color-background-info);color:var(--color-text-info);border:1px solid var(--color-border-info);">
+      Backend & AI Engineer
+    </div>
+    <div class="task-card">
+      <strong>Google Sheets pull</strong>
+      gspread + Sheets API v4. Nightly fetch via APScheduler. Write rows to Supabase.
+    </div>
+    <div class="task-card alt">
+      <strong>Data cleaning</strong>
+      pandas gap-fill, rapidfuzz name normalisation, outlier detection, quarantine invalid rows.
+    </div>
+    <div class="task-card">
+      <strong>Active SKU filter</strong>
+      Cap at 20 SKUs with sales activity in the last 30 days.
+    </div>
+    <div class="task-card alt">
+      <strong>Forecasting model</strong>
+      Prophet per SKU with regressors (lag_7, payday_week, price_changed). ARIMA fallback if MAPE &gt; 40%.
+    </div>
+    <div class="task-card">
+      <strong>Profit analysis</strong>
+      Arithmetic: revenue, gross profit, margin %, rolling 7d averages, rank gap, unsold qty, sell-through rate.
+    </div>
+    <div class="task-card alt">
+      <strong>Confidence guard</strong>
+      4-gate check per SKU. Assign Red / Yellow / Green tier.
+    </div>
+    <div class="task-card">
+      <strong>LLM explanation</strong>
+      Gemini 2.0 Flash prompt → 3-section Bahasa Indonesia message. Tone adapts per tier.
+    </div>
+    <div class="task-card alt">
+      <strong>JSON payload writer</strong>
+      Write final structured payload to Supabase. One record per owner per day.
+    </div>
+    <div class="task-card">
+      <strong>WhatsApp delivery</strong>
+      Fonnte API — send wa_message + pwa_url to owner each morning.
+    </div>
+    <div class="task-card alt">
+      <strong>Missing data handler</strong>
+      Detect stale input. Send WA reminder. Downgrade tier after 3+ consecutive days.
+    </div>
+  </div>
+
+  <div>
+    <div class="col-head" style="background:var(--color-background-success);color:var(--color-text-success);border:1px solid var(--color-border-success);">
+      Frontend Engineer — React PWA
+    </div>
+    <div class="task-card">
+      <strong>Page 1 — Daily dashboard</strong>
+      Reads JSON payload from Supabase. Renders: date, owner name, confidence tier badge, production recs per SKU, top profit section, anomaly alerts.
+    </div>
+    <div class="task-card alt">
+      <strong>Stockout indicator</strong>
+      If stockout_risk = true for a SKU, show a visible warning badge on that product card.
+    </div>
+    <div class="task-card">
+      <strong>Confidence tier badge</strong>
+      Red / Yellow / Green pill at the top of the dashboard with a one-line explanation so the owner understands what it means.
+    </div>
+    <div class="task-card alt">
+      <strong>Page 2 — Supply simulator</strong>
+      SKU dropdown + slider for units to prepare (Y). Three live-updating result cards: profit, opportunity loss, waste cost. Pure client-side arithmetic.
+    </div>
+    <div class="task-card">
+      <strong>Page 3 — Sales history</strong>
+      Line chart: qty_sold last 30 days per SKU. Bar chart: gross profit this week vs last week. Recharts.
+    </div>
+    <div class="task-card alt">
+      <strong>Static routing per owner</strong>
+      Each owner has a fixed URL: <span class="pill">pivo.app/u/:owner_id</span>. No login, no auth. Reads latest payload for that owner from Supabase.
+    </div>
+    <div class="task-card">
+      <strong>Mobile-first layout</strong>
+      Owners open the PWA from WhatsApp on their phone. Responsive, thumb-friendly, fast load.
+    </div>
+    <div class="task-card alt">
+      <strong>Stack</strong>
+      <span class="pill">React</span>
+      <span class="pill">Tailwind</span>
+      <span class="pill">Recharts</span>
+      <span class="pill">Supabase JS client</span>
+      <span class="pill">Vercel / Netlify</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider-label">Coordination contract</div>
+<div class="contract-box">
+  <strong>Backend writes → Frontend reads.</strong> One JSON payload per owner per day stored in Supabase. The Frontend never calls the model or LLM — it only reads what Backend already wrote. Lock down the payload field names from Appendix A, Figure 2 before either side starts building. That is the only coordination point.
+</div>

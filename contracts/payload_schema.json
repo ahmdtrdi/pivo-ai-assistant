@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "pivo/payload_schema.json",
+  "title": "PIVO Daily Recommendation Payload",
+  "description": "Fig2-aligned output payload schema. One document per owner per day. Stored in daily_payloads.payload (Supabase JSONB). Readable by the PWA via anon key.",
+  "type": "object",
+  "required": ["owner_id", "date", "model_routing", "confidence_tier", "forecasts"],
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "description": "UUID of the account row in Supabase accounts table."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date string (YYYY-MM-DD) for which this payload was generated."
+    },
+    "model_routing": {
+      "type": "string",
+      "enum": ["prophet_first_arima_fallback", "skipped_missing_data"],
+      "description": "Routing strategy used in this run."
+    },
+    "confidence_tier": {
+      "type": "string",
+      "enum": ["green", "yellow", "red"],
+      "description": "Worst tier across all active SKUs. Controls overall WA message tone."
+    },
+    "consecutive_missing_days": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of days in a row the owner has not submitted new sales data."
+    },
+    "forecasts": {
+      "type": "array",
+      "description": "One entry per modelled SKU, sorted by qty_mid descending.",
+      "items": {
+        "type": "object",
+        "required": ["sku", "sku_name", "tier", "qty_mid", "qty_low", "qty_high"],
+        "properties": {
+          "sku":               { "type": "string", "description": "Slug identifier (snake_case)." },
+          "sku_name":          { "type": "string", "description": "Display name as entered by owner." },
+          "category":          { "type": "string" },
+          "selected_model":    { "type": "string", "enum": ["prophet", "arima"] },
+          "tier":              { "type": "string", "enum": ["green", "yellow", "red"] },
+          "tier_if_missing_3d":{ "type": "string", "enum": ["green", "yellow", "red"] },
+          "qty_mid":           { "type": "number", "minimum": 0, "description": "Point forecast (yhat), clipped at 0." },
+          "qty_low":           { "type": "number", "minimum": 0, "description": "Lower bound of 80% CI." },
+          "qty_high":          { "type": "number", "minimum": 0, "description": "Upper bound of 80% CI." },
+          "trend":             { "type": "string", "enum": ["growing", "stable", "declining"] },
+          "stockout_risk":     { "type": "boolean", "description": "True if qty_mid > rolling_7d_avg × 1.15." }
+        }
+      }
+    },
+    "profit_analysis": {
+      "type": "array",
+      "description": "Profit metrics per SKU (all active, not just modelled). Empty if COGS data unavailable.",
+      "items": {
+        "type": "object",
+        "required": ["sku", "sku_name", "unit_price", "gross_profit", "margin_pct"],
+        "properties": {
+          "sku":               { "type": "string" },
+          "sku_name":          { "type": "string" },
+          "unit_price":        { "type": "number" },
+          "unit_cost":         { "type": "number" },
+          "revenue":           { "type": "number" },
+          "gross_profit":      { "type": "number" },
+          "margin_pct":        { "type": "number", "description": "(price-cost)/price × 100" },
+          "rolling_7d_sales":  { "type": "number" },
+          "rolling_7d_profit": { "type": "number" },
+          "margin_delta":      { "type": "number", "description": "Week-on-week margin change in pp." },
+          "profit_rank":       { "type": "integer" },
+          "volume_rank":       { "type": "integer" },
+          "rank_gap":          { "type": "integer", "description": "volume_rank − profit_rank. Positive = high-volume but low-margin." },
+          "qty_prepared":      { "type": ["number", "null"] },
+          "unsold_qty":        { "type": ["number", "null"] },
+          "sell_through_rate": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "anomaly_flags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of flag strings, e.g. 'margin_drop_kopi_susu', 'stockout_risk_nasi_goreng'."
+    },
+    "wa_message": {
+      "type": ["string", "null"],
+      "description": "Final WhatsApp message text (Bahasa Indonesia). Null if LLM failed and no fallback was produced."
+    },
+    "pwa_url": {
+      "type": "string",
+      "description": "Deep link to the owner's PWA dashboard."
+    },
+    "skipped_skus": {
+      "type": "array",
+      "description": "SKUs that were active but skipped (pre-gate Red or model failure).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sku":      { "type": "string" },
+          "sku_name": { "type": "string" },
+          "reason":   { "type": "string", "description": "E.g. gate1_data_volume_red, gate2_recency_red, model_failed_both." },
+          "tier":     { "type": "string", "enum": ["red"] },
+          "gap_days": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

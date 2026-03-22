@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56; --teal-800: #085041;
+    --purple-50: #EEEDFE; --purple-100: #CECBF6; --purple-600: #534AB7; --purple-800: #3C3489;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-600: #854F0B;
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5;
+    --green-50: #EAF3DE; --green-100: #C0DD97; --green-600: #3B6D11;
+    --gray-50: #F1EFE8; --gray-200: #B4B2A9; --gray-400: #888780; --gray-600: #5F5E5A; --gray-800: #2C2C2A;
+    --border: #E2E0D8;
+  }
+  body { font-family: Arial, Helvetica, sans-serif; background: transparent; color: var(--gray-800); padding: 16px 20px 20px; font-size: 11px; }
+  .page { max-width: 740px; margin: 0 auto; }
+  .header { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--teal-400); display: flex; align-items: flex-end; justify-content: space-between; }
+  .wordmark { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--teal-400); text-transform: uppercase; margin-bottom: 2px; }
+  .title { font-size: 15px; font-weight: bold; color: var(--gray-800); }
+  .subtitle { font-size: 11px; color: var(--gray-400); margin-top: 2px; font-style: italic; }
+  .fig-label { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gray-400); white-space: nowrap; }
+  .section-strip { display: flex; align-items: center; gap: 8px; margin: 7px 0 4px; }
+  .section-tag { font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; white-space: nowrap; }
+  .tag-json { background: var(--purple-50); color: var(--purple-600); border: 1px solid var(--purple-100); }
+  .tag-wa   { background: var(--teal-50);   color: var(--teal-600);   border: 1px solid var(--teal-100); }
+  .tag-sim  { background: var(--blue-50);   color: var(--blue-600);   border: 1px solid var(--blue-100); }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .json-card { background: white; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 4px; }
+  .json-card-header { background: var(--purple-50); border-bottom: 1px solid var(--purple-100); padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; color: var(--purple-800); letter-spacing: 0.06em; text-transform: uppercase; }
+  .json-body { font-family: 'Courier New', monospace; font-size: 11px; padding: 6px 10px; line-height: 1.55; color: var(--gray-600); }
+  .jk { color: var(--purple-600); } .jv { color: #C05020; } .jn { color: var(--blue-600); } .jb { color: var(--green-600); }
+  .inline-notes { margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+  .note-line { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gray-600); line-height: 1.5; display: flex; gap: 5px; }
+  .note-line .nk { color: var(--purple-600); white-space: nowrap; }
+  .note-line .nv { color: var(--gray-400); }
+  .wa-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+  .wa-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--border); }
+  .wa-card-header { padding: 6px 10px; font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; letter-spacing: 0.08em; text-transform: uppercase; }
+  .wa-card-header.green  { background: var(--green-50);  color: var(--green-600);  border-bottom: 1px solid var(--green-100); }
+  .wa-card-header.yellow { background: var(--amber-50);  color: var(--amber-600);  border-bottom: 1px solid var(--amber-100); }
+  .wa-card-header.red    { background: #FCEBEB;          color: #A32D2D;           border-bottom: 1px solid #F7C1C1; }
+  .wa-card-body { padding: 5px 7px; font-size: 11px; line-height: 1.4; background: white; color: var(--gray-800); }
+  .wa-id { font-size: 11px; color: var(--gray-400); font-style: italic; margin-bottom: 3px; padding-bottom: 3px; border-bottom: 0.5px solid var(--border); }
+  .wa-en { font-size: 11px; color: var(--gray-400); font-style: italic; }
+  .wa-divider { border: none; border-top: 0.5px dashed var(--border); margin: 4px 0; }
+  .sim-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 6px; }
+  .sim-case { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+  .sim-case-title { font-family: 'Courier New', monospace; font-size: 11px; font-weight: bold; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; }
+  .sim-case.exact .sim-case-title { color: var(--green-600); }
+  .sim-case.under .sim-case-title { color: #A32D2D; }
+  .sim-case.over  .sim-case-title { color: var(--amber-600); }
+  .sim-formula { font-family: 'Courier New', monospace; font-size: 11px; color: var(--gray-600); line-height: 1.7; }
+  .sim-formula span { display: block; }
+  .sim-result { font-family: 'Courier New', monospace; font-size: 11px; margin-top: 5px; padding-top: 5px; border-top: 0.5px solid var(--border); color: var(--gray-400); font-style: italic; }
+  .note-box { background: var(--gray-50); border-left: 3px solid var(--gray-200); padding: 6px 10px; font-size: 11px; color: var(--gray-600); font-style: italic; margin-top: 6px; border-radius: 0 3px 3px 0; }
+  .tags-row { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 5px; }
+  .tech-tag { font-family: 'Courier New', monospace; font-size: 11px; padding: 1px 5px; border-radius: 2px; border: 1px solid var(--border); color: var(--gray-600); background: white; }
+  .footer-note { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--gray-400); font-family: 'Courier New', monospace; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="wordmark">PIVO · AI Ready ASEAN Youth Challenge</div>
+      <div class="title">Output Detail: Payload, Message Format & Simulator</div>
+      <div class="subtitle">JSON schema · WhatsApp messages by confidence tier (with English translation) · PWA supply simulator · See Figure 1 for pipeline</div>
+    </div>
+    <div class="fig-label">Appendix A · Figure 2</div>
+  </div>
+
+  <!-- A: JSON -->
+  <div class="section-strip">
+    <span class="section-tag tag-json">A · Structured insight payload (JSON)</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="json-card">
+    <div class="json-card-header">Sample payload — Warung Budi · 2025-03-15 · Green tier</div>
+    <div class="json-body">
+{<br>
+&nbsp;&nbsp;<span class="jk">"owner_id"</span>: <span class="jv">"warung_budi_001"</span>,&nbsp;&nbsp;<span class="jk">"date"</span>: <span class="jv">"2025-03-15"</span>,<br>
+&nbsp;&nbsp;<span class="jk">"forecasts"</span>: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="jk">"sku"</span>: <span class="jv">"Kopi Susu"</span>, <span class="jk">"tier"</span>: <span class="jv">"green"</span>, <span class="jk">"qty_mid"</span>: <span class="jn">48</span>, <span class="jk">"qty_low"</span>: <span class="jn">40</span>, <span class="jk">"qty_high"</span>: <span class="jn">56</span>, <span class="jk">"trend"</span>: <span class="jv">"growing"</span>, <span class="jk">"stockout_risk"</span>: <span class="jb">true</span> },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="jk">"sku"</span>: <span class="jv">"Es Teh"</span>, <span class="jk">"tier"</span>: <span class="jv">"green"</span>, <span class="jk">"qty_mid"</span>: <span class="jn">22</span>, <span class="jk">"qty_low"</span>: <span class="jn">18</span>, <span class="jk">"qty_high"</span>: <span class="jn">26</span>, <span class="jk">"trend"</span>: <span class="jv">"stable"</span>, <span class="jk">"stockout_risk"</span>: <span class="jb">false</span> }<br>
+&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;<span class="jk">"profit_analysis"</span>: [<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="jk">"sku"</span>: <span class="jv">"Kopi Susu"</span>, <span class="jk">"revenue"</span>: <span class="jn">192000</span>, <span class="jk">"gross_profit"</span>: <span class="jn">119040</span>, <span class="jk">"margin_pct"</span>: <span class="jn">62</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"rolling_7d_sales"</span>: <span class="jn">44</span>, <span class="jk">"rolling_7d_profit"</span>: <span class="jn">108680</span>, <span class="jk">"margin_delta"</span>: <span class="jn">2</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"profit_rank"</span>: <span class="jn">1</span>, <span class="jk">"volume_rank"</span>: <span class="jn">1</span>, <span class="jk">"rank_gap"</span>: <span class="jn">0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="jk">"qty_prepared"</span>: <span class="jn">50</span>, <span class="jk">"unsold_qty"</span>: <span class="jn">2</span>, <span class="jk">"sell_through_rate"</span>: <span class="jn">96</span> },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="jk">"sku"</span>: <span class="jv">"Es Teh"</span>, ..., <span class="jk">"qty_prepared"</span>: <span class="jb">null</span>, <span class="jk">"unsold_qty"</span>: <span class="jb">null</span>, <span class="jk">"sell_through_rate"</span>: <span class="jb">null</span> }<br>
+&nbsp;&nbsp;],<br>
+&nbsp;&nbsp;<span class="jk">"anomaly_flags"</span>: [<span class="jv">"margin_drop_es_jeruk"</span>],<br>
+&nbsp;&nbsp;<span class="jk">"wa_message"</span>: <span class="jv">"..."</span>,&nbsp;&nbsp;<span class="jk">"pwa_url"</span>: <span class="jv">"pivo.app/u/warung_budi_001"</span><br>
+}
+    </div>
+  </div>
+
+  <div class="inline-notes">
+    <div class="note-line"><span class="nk">tier</span><span class="nv">red / yellow / green — controls LLM tone</span></div>
+    <div class="note-line"><span class="nk">qty_mid/low/high</span><span class="nv">Prophet yhat / lower / upper bounds</span></div>
+    <div class="note-line"><span class="nk">trend</span><span class="nv">growing / stable / declining vs 7d prior</span></div>
+    <div class="note-line"><span class="nk">stockout_risk</span><span class="nv">true if demand &gt; rolling avg × 1.15</span></div>
+    <div class="note-line"><span class="nk">revenue</span><span class="nv">unit_price × qty_sold (IDR)</span></div>
+    <div class="note-line"><span class="nk">gross_profit</span><span class="nv">(price − cost) × qty_sold (IDR)</span></div>
+    <div class="note-line"><span class="nk">margin_pct</span><span class="nv">(price − cost) / price × 100</span></div>
+    <div class="note-line"><span class="nk">margin_delta</span><span class="nv">this week margin minus last week — negative = cost creep</span></div>
+    <div class="note-line"><span class="nk">rank_gap</span><span class="nv">volume_rank − profit_rank — gap ≥ 2 = undervalued SKU</span></div>
+    <div class="note-line"><span class="nk">qty_prepared</span><span class="nv">owner-input — null if not entered</span></div>
+    <div class="note-line"><span class="nk">unsold_qty</span><span class="nv">qty_prepared − qty_sold — null if no prep data</span></div>
+    <div class="note-line"><span class="nk">sell_through_rate</span><span class="nv">qty_sold / qty_prepared × 100 — null if no prep data</span></div>
+  </div>
+
+  <!-- B: WA MESSAGES -->
+  <div class="section-strip" style="margin-top:8px;">
+    <span class="section-tag tag-wa">B · WhatsApp message format by confidence tier</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="wa-grid">
+    <div class="wa-card">
+      <div class="wa-card-header green">&#128994; Green tier — full forecast</div>
+      <div class="wa-card-body">
+        <div class="wa-id">Bahasa Indonesia (sent to owner)</div>
+        Selamat pagi, Budi! &#128075;<br><br>
+        &#128230; <strong>Produksi besok:</strong><br>
+        &bull; Kopi Susu: 40&ndash;56 cup &#9888;&#65039;<br>
+        &bull; Es Teh: 18&ndash;26 cup<br><br>
+        &#128176; <strong>Paling untung:</strong><br>
+        &bull; Kopi Susu &mdash; margin 62%<br><br>
+        &#9888;&#65039; Es Jeruk: margin turun 12%<br><br>
+        &#128202; <u>pivo.app/u/warung_budi_001</u><br>
+        <span style="font-size:10px;color:var(--gray-400);font-style:italic;">Semakin rutin catat, semakin akurat.</span>
+        <hr class="wa-divider">
+        <div class="wa-en">Good morning, Budi! Tomorrow: Kopi Susu 40&ndash;56 cups &#9888;&#65039;, Es Teh 18&ndash;26 cups. Most profitable: Kopi Susu (62%). Alert: Es Jeruk margin down 12%.</div>
+      </div>
+    </div>
+    <div class="wa-card">
+      <div class="wa-card-header yellow">&#128993; Yellow tier — early estimate</div>
+      <div class="wa-card-body">
+        <div class="wa-id">Bahasa Indonesia (sent to owner)</div>
+        Selamat pagi, Budi! &#128075;<br><br>
+        &#128230; <strong>Produksi besok:</strong><br>
+        &bull; Kopi Susu: sekitar 45 cup<br>
+        <span style="font-size:10px;color:var(--amber-600);font-style:italic;">(data terbatas, perkiraan awal)</span><br><br>
+        &#128176; <strong>Paling untung:</strong><br>
+        &bull; Kopi Susu &mdash; margin 62%<br><br>
+        &#128202; <u>pivo.app/u/warung_budi_001</u><br><br>
+        <span style="font-size:10px;color:var(--gray-400);font-style:italic;">Terus catat supaya prediksi makin akurat!</span>
+        <hr class="wa-divider">
+        <div class="wa-en">Good morning, Budi! Estimate: Kopi Susu ~45 cups (limited data). Most profitable: Kopi Susu (62%). Keep recording to improve accuracy!</div>
+      </div>
+    </div>
+    <div class="wa-card">
+      <div class="wa-card-header red">&#128308; Red tier — no prediction</div>
+      <div class="wa-card-body">
+        <div class="wa-id">Bahasa Indonesia (sent to owner)</div>
+        Hai Budi! &#128075;<br><br>
+        PIVO belum bisa buat prediksi untukmu hari ini karena data penjualan masih sedikit.<br><br>
+        Yuk mulai catat penjualan hari ini &mdash; semakin banyak data, semakin akurat saran PIVO! &#128221;<br><br>
+        <span style="font-size:10px;color:var(--gray-400);font-style:italic;">Butuh bantuan? Hubungi fasilitator NGO-mu.</span>
+        <hr class="wa-divider">
+        <div class="wa-en">Hi Budi! No prediction yet &mdash; not enough data. Start logging today! Contact your NGO facilitator if you need help.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: SIMULATOR -->
+  <div class="section-strip" style="margin-top:8px;">
+    <span class="section-tag tag-sim">C · PWA supply simulator (client-side, no API call)</span>
+    <div class="section-line"></div>
+  </div>
+  <div style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:6px;padding:7px 12px;font-size:10px;color:var(--blue-600);margin-bottom:6px;line-height:1.5;">
+    Owner drags a slider to set Y (units to prepare). Recalculates in real time from the JSON payload. Uses <strong>qty_mid</strong> as demand baseline. No extra API call needed.
+  </div>
+  <div class="sim-grid">
+    <div class="sim-case exact">
+      <div class="sim-case-title">Exact prep (Y = demand)</div>
+      <div class="sim-formula"><span>profit = (price - cost) x Y</span></div>
+      <div class="sim-result">No waste, no stockout</div>
+    </div>
+    <div class="sim-case under">
+      <div class="sim-case-title">Underprep (Y &lt; demand)</div>
+      <div class="sim-formula">
+        <span>profit = (price - cost) x Y</span>
+        <span>opp_loss = (demand - Y) x (price - cost)</span>
+      </div>
+      <div class="sim-result">Sold out — missed revenue shown</div>
+    </div>
+    <div class="sim-case over">
+      <div class="sim-case-title">Overprep (Y &gt; demand)</div>
+      <div class="sim-formula">
+        <span>profit = (price - cost) x demand</span>
+        <span>waste_loss = (Y - demand) x unit_cost</span>
+      </div>
+      <div class="sim-result">Waste cost shown in IDR</div>
+    </div>
+  </div>
+  <div class="note-box">Inputs from JSON payload: qty_mid, unit_price, unit_cost. Pure client-side arithmetic in React PWA.</div>
+  <div class="tags-row">
+    <span class="tech-tag">React PWA</span>
+    <span class="tech-tag">client-side JS only</span>
+    <span class="tech-tag">slider → real-time recalculation</span>
+    <span class="tech-tag">static hosting</span>
+  </div>
+
+  <div class="footer-note">
+    <span>PIVO · AI-Based Solution · Appendix A, Figure 2 of 2</span>
+    <span>AI Ready ASEAN Youth Challenge 2025 · Indonesia</span>
+  </div>
+</div>
+</body>
+</html>

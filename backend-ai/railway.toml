@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python scheduler.py"
+# This is a worker process — no port binding, no health check
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5

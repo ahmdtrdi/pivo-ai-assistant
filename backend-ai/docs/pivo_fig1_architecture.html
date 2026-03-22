@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56; --teal-800: #085041;
+    --purple-50: #EEEDFE; --purple-100: #CECBF6; --purple-400: #7F77DD; --purple-600: #534AB7; --purple-800: #3C3489;
+    --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-600: #854F0B;
+    --coral-50: #FAECE7; --coral-100: #F5C4B3; --coral-600: #993C1D;
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5;
+    --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-400: #888780; --gray-600: #5F5E5A; --gray-800: #2C2C2A;
+    --bg: #FAFAF8; --border: #E2E0D8;
+  }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.35; background: #f3f3f1; color: var(--gray-800); padding: 24px; min-height: 100vh; }
+  .page { width: 210mm; min-height: 297mm; padding: 12mm; background: white; margin: 0 auto; }
+  @media screen { .page { box-shadow: 0 8px 24px rgba(0,0,0,0.08); } }
+  @media print { body { background: transparent; padding: 0; } .page { width: 210mm; min-height: 297mm; padding: 12mm; box-shadow: none; } }
+  
+
+  .header { margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid var(--teal-400); display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .wordmark { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; letter-spacing: 0.14em; color: var(--teal-400); text-transform: uppercase; margin-bottom: 2px; }
+  .title { font-size: 20pt; font-weight: bold; color: var(--gray-800); font-family: Arial, Helvetica, sans-serif; }
+  .subtitle { font-size: 11pt; color: var(--gray-400); margin-top: 2px; font-style: italic; }
+  .fig-label { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: var(--gray-400); white-space: nowrap; }
+
+  .section-strip { display: flex; align-items: center; gap: 10px; margin: 14px 0 8px; }
+  .section-tag { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; font-weight: bold; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; white-space: nowrap; }
+  .tag-input   { background: var(--teal-50);   color: var(--teal-600);   border: 1px solid var(--teal-100); }
+  .tag-backend { background: var(--gray-50);   color: var(--gray-600);   border: 1px solid var(--border); }
+  .tag-ai      { background: var(--purple-50); color: var(--purple-600); border: 1px solid var(--purple-100); }
+  .tag-guard   { background: var(--amber-50);  color: var(--amber-600);  border: 1px solid var(--amber-100); }
+  .tag-missing { background: var(--coral-50);  color: var(--coral-600);  border: 1px solid var(--coral-100); }
+  .tag-output  { background: var(--teal-50);   color: var(--teal-600);   border: 1px solid var(--teal-100); }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  .block { border-radius: 8px; padding: 10px 14px; margin-bottom: 5px; border: 1px solid transparent; }
+  .block-input   { background: var(--teal-50);   border-color: var(--teal-100); }
+  .block-backend { background: var(--gray-50);   border-color: var(--border); }
+  .block-ai      { background: var(--purple-50); border-color: var(--purple-100); }
+  .block-guard   { background: var(--amber-50);  border-color: var(--amber-100); }
+  .block-missing { background: var(--coral-50);  border-color: var(--coral-100); }
+  .block-output  { background: var(--teal-50);   border-color: var(--teal-100); }
+
+  .block-name { font-size: 11pt; font-weight: bold; margin-bottom: 2px; font-family: Arial, Helvetica, sans-serif; }
+  .block-input  .block-name, .block-output .block-name { color: var(--teal-800); }
+  .block-ai     .block-name { color: var(--purple-800); }
+  .block-guard  .block-name { color: var(--amber-600); }
+  .block-missing .block-name { color: var(--coral-600); }
+  .block-backend .block-name { color: var(--gray-800); }
+
+  .block-desc { font-size: 11pt; line-height: 1.4; font-family: Arial, Helvetica, sans-serif; }
+  .block-input  .block-desc, .block-output .block-desc { color: var(--teal-600); }
+  .block-ai     .block-desc { color: var(--purple-600); }
+  .block-guard  .block-desc { color: var(--amber-600); }
+  .block-missing .block-desc { color: var(--coral-600); }
+  .block-backend .block-desc { color: var(--gray-600); }
+
+  /* All tags white for consistency */
+  .tags-row { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px; }
+  .tech-tag { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; padding: 1px 5px; border-radius: 2px; border: 1px solid var(--border); color: var(--gray-600); background: white; }
+
+  .connector { display: flex; flex-direction: column; align-items: center; margin: 4px 0; }
+  .conn-line { width: 2px; height: 14px; background: var(--gray-200); }
+  .conn-label { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: var(--gray-400); margin: 1px 0; }
+  .conn-arrow { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 6px solid var(--gray-200); }
+  .conn-arrow.teal   { border-top-color: var(--teal-100); }
+  .conn-arrow.purple { border-top-color: var(--purple-100); }
+  .conn-arrow.amber  { border-top-color: var(--amber-100); }
+
+  .loop-container { border: 2px dashed var(--purple-400); border-radius: 10px; padding: 12px; margin-bottom: 5px; position: relative; background: rgba(238,237,254,0.25); }
+  .loop-badge { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; font-weight: bold; letter-spacing: 0.08em; color: var(--purple-600); text-transform: uppercase; position: absolute; top: -8px; left: 12px; background: var(--bg); padding: 0 6px; }
+
+  .see-also { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: var(--blue-600); background: var(--blue-50); border: 1px solid var(--blue-100); border-radius: 3px; padding: 4px 8px; margin-top: 8px; }
+  .footer-note { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 10pt; color: var(--gray-400); font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="wordmark">PIVO · AI Ready ASEAN Youth Challenge</div>
+      <div class="title">Backend & AI/ML Tech Stack Architecture</div>
+      <div class="subtitle">Layer overview and tooling · Decision logic and thresholds detailed in Appendix B tables</div>
+    </div>
+    <div class="fig-label">Appendix A · Figure 1</div>
+  </div>
+
+  <!-- 01 INPUT -->
+  <div class="section-strip">
+    <span class="section-tag tag-input">01 · Input</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="block block-input">
+    <div class="block-name">POS data / Google Sheets</div>
+    <div class="block-desc">Single source of truth. Same schema whether entered by MSME owner or NGO facilitator.</div>
+    <div class="tags-row">
+      <span class="tech-tag">gspread</span>
+      <span class="tech-tag">Google Sheets API v4</span>
+      <span class="tech-tag">CSV fallback</span>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="conn-line"></div>
+    <span class="conn-label">nightly pull</span>
+    <div class="conn-line"></div>
+    <div class="conn-arrow"></div>
+  </div>
+
+  <!-- 02 MISSING DATA -->
+  <div class="section-strip">
+    <span class="section-tag tag-missing">02 · Missing data handler</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="block block-missing">
+    <div class="block-name">New data check + reminder logic</div>
+    <div class="block-desc">Checks if new rows exist since last run. Escalates WA reminders and adjusts confidence tier on consecutive missing days. Never goes silent. (See Table 5)</div>
+    <div class="tags-row">
+      <span class="tech-tag">Python</span>
+      <span class="tech-tag">APScheduler</span>
+      <span class="tech-tag">Fonnte (WhatsApp API)</span>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="conn-line"></div>
+    <span class="conn-label">data OK → proceed</span>
+    <div class="conn-line"></div>
+    <div class="conn-arrow"></div>
+  </div>
+
+  <!-- 03 BACKEND -->
+  <div class="section-strip">
+    <span class="section-tag tag-backend">03 · Backend</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="block block-backend" style="margin-bottom:3px;">
+    <div class="block-name">Python cron job — nightly orchestrator</div>
+    <div class="block-desc">Triggers at 23:00 local. Fetches rows since last watermark. Stateless and resumable on failure.</div>
+    <div class="tags-row">
+      <span class="tech-tag">Python 3.11+</span>
+      <span class="tech-tag">APScheduler</span>
+      <span class="tech-tag">Supabase (PoC)</span>
+      <span class="tech-tag">Railway / Render free tier</span>
+    </div>
+  </div>
+
+  <div class="connector"><div class="conn-line"></div><div class="conn-arrow"></div></div>
+
+  <div class="block block-backend" style="margin-bottom:3px;">
+    <div class="block-name">Data cleaning + validation</div>
+    <div class="block-desc">Gap-fills missing dates, normalises product names via fuzzy match, detects outliers, and quarantines invalid rows.</div>
+    <div class="tags-row">
+      <span class="tech-tag">pandas</span>
+      <span class="tech-tag">rapidfuzz</span>
+    </div>
+  </div>
+
+  <div class="connector"><div class="conn-line"></div><div class="conn-arrow"></div></div>
+
+  <div class="block block-backend">
+    <div class="block-name">Active SKU filter</div>
+    <div class="block-desc">Selects up to 20 SKUs with recent sales activity. Excluded SKUs still appear in profit analysis but receive no forecast.</div>
+    <div class="tags-row">
+      <span class="tech-tag">pandas groupby + date filter</span>
+      <span class="tech-tag">Cap: 20 active SKUs</span>
+    </div>
+  </div>
+
+  <div class="connector"><div class="conn-line"></div><div class="conn-arrow"></div></div>
+
+  <!-- 04 AI LOOP -->
+  <div class="section-strip">
+    <span class="section-tag tag-ai">04 · AI / ML — per-SKU loop</span>
+    <div class="section-line"></div>
+  </div>
+
+  <!-- gap between section strip and loop badge -->
+  <div style="height: 14px;"></div>
+
+  <div class="loop-container">
+    <span class="loop-badge">for each active SKU (≤ 20 iterations)</span>
+
+    <div class="block block-ai" style="margin-bottom:6px;">
+      <div class="block-name">Time-series forecasting</div>
+      <div class="block-desc">Fits a forecasting model on each SKU's full history using time-based regressors. Evaluates model accuracy via cross-validation and selects the best model. (See Table 4 for features, Table 2 for forecasting outputs)</div>
+      <div class="tags-row">
+        <span class="tech-tag">Prophet / NeuralProphet</span>
+        <span class="tech-tag">pmdarima (ARIMA fallback)</span>
+        <span class="tech-tag">Prophet cross_validation</span>
+      </div>
+    </div>
+
+    <div class="block block-ai" style="margin-bottom:0;">
+      <div class="block-name">Margin + profit analysis</div>
+      <div class="block-desc">Deterministic arithmetic across all SKUs. Computes revenue, gross profit, margin %, rolling 7-day averages, rank gap, unsold qty, and sell-through rate. (See Table 3)</div>
+      <div class="tags-row">
+        <span class="tech-tag">pandas</span>
+        <span class="tech-tag">Revenue = price x qty</span>
+        <span class="tech-tag">Gross Profit = (price - cost) x qty</span>
+        <span class="tech-tag">Margin % = (price - cost) / price x 100</span>
+        <span class="tech-tag">Sell-through Rate = qty_sold / qty_prepared x 100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="conn-line"></div><div class="conn-arrow amber"></div></div>
+
+  <!-- 05 CONFIDENCE GUARD -->
+  <div class="section-strip">
+    <span class="section-tag tag-guard">05 · Confidence guard</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="block block-guard">
+    <div class="block-name">Confidence check (per SKU)</div>
+    <div class="block-desc">Assesses data sufficiency and model reliability for each SKU. Assigns a Red / Yellow / Green tier that controls how the LLM communicates the result. (See Table 1 for full gate logic)</div>
+    <div class="tags-row">
+      <span class="tech-tag">Custom Python logic</span>
+      <span class="tech-tag">Prophet confidence intervals</span>
+      <span class="tech-tag">Red · Yellow · Green tier output</span>
+    </div>
+  </div>
+
+  <div class="connector"><div class="conn-line" style="background:var(--purple-100);"></div><div class="conn-arrow purple"></div></div>
+
+  <!-- LLM -->
+  <div class="block block-ai">
+    <div class="block-name">LLM explanation layer</div>
+    <div class="block-desc">Receives structured JSON (predictions, tier, flags, rankings). Generates a 3-section Bahasa Indonesia message. Tone adapts to confidence tier: Green gives specific numbers, Yellow adds caveat, Red gives encouragement only.</div>
+    <div class="tags-row">
+      <span class="tech-tag">Gemini 2.0 Flash (free tier · PoC)</span>
+      <span class="tech-tag">3 sections: forecast · profit · alerts</span>
+    </div>
+  </div>
+
+  <div class="connector"><div class="conn-line" style="background:var(--teal-100);"></div><div class="conn-arrow teal"></div></div>
+
+  <!-- 06 OUTPUT -->
+  <div class="section-strip">
+    <span class="section-tag tag-output">06 · Output</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="block block-output">
+    <div class="block-name">Structured insight payload → WhatsApp + PWA</div>
+    <div class="block-desc">JSON payload decoupled from delivery channel. WhatsApp message delivers 3 bulleted insight sections + static PWA link. PWA includes graphs, KPI cards, and supply simulator. Same payload feeds NGO cohort view.</div>
+    <div class="tags-row">
+      <span class="tech-tag">Fonnte (WhatsApp API)</span>
+      <span class="tech-tag">React PWA · supply simulator</span>
+      <span class="tech-tag">static hosting</span>
+    </div>
+  </div>
+
+  <div class="see-also">→ See Appendix A, Figure 2 for output payload schema, WhatsApp message format, and supply simulator logic.</div>
+
+  <div class="footer-note">
+    <span>PIVO · AI-Based Solution · Appendix A, Figure 1 of 2</span>
+    <span>AI Ready ASEAN Youth Challenge 2025 · Indonesia</span>
+  </div>
+
+</div>
+</body>
+</html>
