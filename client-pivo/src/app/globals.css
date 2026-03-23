@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pivo-primary: #f8fafc;
+  --pivo-navy: #1e3a8a;
+  --pivo-blue: #3b82f6;
+  --pivo-amber: #f59e0b;
+  --pivo-coral: #e06b53;
+  --pivo-coral-ink: #9b3f2d;
+
+  --background: var(--pivo-primary);
+  --foreground: #0f172a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
+  margin: 0;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.18), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(245, 158, 11, 0.14), transparent 40%),
+    var(--background);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  background: var(--pivo-navy);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  background: var(--pivo-navy);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
 }
