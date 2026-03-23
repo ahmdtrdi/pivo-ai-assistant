@@ -43,9 +43,38 @@ cp .env.example .env
 # Run supabase/seed.sql in your Supabase SQL editor
 
 # 4. Run one pipeline cycle locally (CSV mode, no Sheets key needed)
-python -m app.pipeline --csv ../data/external/coffee_shop_sales.csv
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv
 
 # 5. Verify the payload was printed to stdout (DEV_MODE=true is auto-set)
+```
+
+Replay example (no future leakage beyond cursor date):
+
+```bash
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv --replay-mode --run-date 2026-01-10
+```
+
+Step replay cursor forward:
+
+```bash
+# +1 day
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv --replay-mode --step-days 1
+
+# +7 days
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv --replay-mode --step-days 7
+```
+
+Replay scenario examples:
+
+```bash
+# Simulate owner not inputting data
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv --replay-mode --scenario missing_input
+
+# Simulate demand spike on cursor date
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv --replay-mode --scenario spike
+
+# Simulate demand drop on cursor date
+python -m app.pipeline --csv data/Serayu_Chicken_60k.csv --replay-mode --scenario drop
 ```
 
 ## Deployment to Railway
@@ -76,3 +105,10 @@ No code changes needed â€” just update `.env` values.
 - **Dry-run mode by default** â€” `FONNTE_DRY_RUN=true` in `.env.example` means WA sends are logged, not actually sent, until you explicitly flip it.
 
 
+
+## Data Flow Reference
+
+- See [`docs/DATA_FLOW.md`](docs/DATA_FLOW.md) for:
+  - real operator flow (POS CSV -> Drive -> Sheet -> API),
+  - append rules and dedup assumptions,
+  - mode toggles (auto-import, manual PoC CSV, replay demo mode).

@@ -1,0 +1,4 @@
+scenario,status,error,confidence_tier,model_routing,forecast_count,missing_days,forecast_sum,baseline_forecast_sum,forecast_delta_vs_normal
+normal,pass,,green,prophet_first_arima_fallback,20,0,535.5899999999999,,
+missing_input,pass,,green,prophet_first_arima_fallback,20,1,535.5899999999999,,
+spike,pass,,yellow,prophet_first_arima_fallback,20,0,527.8399999999999,535.5899999999999,-7.75

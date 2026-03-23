@@ -11,7 +11,12 @@ from datetime import date, datetime
 from typing import Optional
 
 from dotenv import load_dotenv
-from supabase import create_client, Client
+
+try:
+    from supabase import create_client, Client
+except Exception:  # noqa: BLE001
+    create_client = None  # type: ignore[assignment]
+    Client = object  # type: ignore[assignment,misc]
 
 load_dotenv()
 
@@ -21,6 +26,11 @@ _client: Optional[Client] = None
 def get_client() -> Client:
     global _client
     if _client is None:
+        if create_client is None:
+            raise ImportError(
+                "Supabase client import failed. Install a compatible `supabase` package "
+                "or run in DEV_MODE where DB helpers are not called."
+            )
         url = os.environ["SUPABASE_URL"]
         key = os.environ["SUPABASE_SERVICE_KEY"]
         _client = create_client(url, key)

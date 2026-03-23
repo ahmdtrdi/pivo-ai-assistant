@@ -1,0 +1,42 @@
+{
+  "generated_at_utc": "2026-03-23T01:43:11.392098+00:00",
+  "overall_status": "pass",
+  "csv_path": "data\\Serayu_Chicken_60k.csv",
+  "run_date": "2026-01-10",
+  "owner_id": "demo",
+  "scenarios": [
+    {
+      "scenario": "normal",
+      "status": "pass",
+      "error": "",
+      "confidence_tier": "green",
+      "model_routing": "prophet_first_arima_fallback",
+      "forecast_count": 20,
+      "missing_days": 0,
+      "forecast_sum": 535.5899999999999
+    },
+    {
+      "scenario": "missing_input",
+      "status": "pass",
+      "error": "",
+      "confidence_tier": "green",
+      "model_routing": "prophet_first_arima_fallback",
+      "forecast_count": 20,
+      "missing_days": 1,
+      "forecast_sum": 535.5899999999999
+    },
+    {
+      "scenario": "spike",
+      "status": "pass",
+      "error": "",
+      "confidence_tier": "yellow",
+      "model_routing": "prophet_first_arima_fallback",
+      "forecast_count": 20,
+      "missing_days": 0,
+      "forecast_sum": 527.8399999999999,
+      "baseline_forecast_sum": 535.5899999999999,
+      "forecast_delta_vs_normal": -7.75
+    }
+  ],
+  "output_dir": "outputs\\replay_validation\\20260323T014150Z"
+}

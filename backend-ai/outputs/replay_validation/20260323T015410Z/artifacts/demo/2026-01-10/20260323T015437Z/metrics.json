@@ -1,0 +1,28 @@
+{
+  "owner_id": "demo",
+  "run_date": "2026-01-10",
+  "status": "ok",
+  "created_at_utc": "2026-03-23T01:54:37.815003+00:00",
+  "confidence_tier": "green",
+  "consecutive_missing_days": 0,
+  "has_new_data": true,
+  "raw_rows": 25022,
+  "clean_rows": 1312,
+  "delivery_ok": true,
+  "wa_message_length": 312,
+  "forecast_count": 20,
+  "skipped_count": 0,
+  "profit_row_count": 20,
+  "anomaly_count": 0,
+  "replay_mode": true,
+  "replay_scenario": "normal",
+  "model_counts": {
+    "arima": 20
+  },
+  "tier_counts": {
+    "green": 20
+  },
+  "mean_selected_mape": 0.3018622106076278,
+  "mean_selected_rmse": 8.323941533939186,
+  "mean_selected_smape": 0.25268966583088454
+}

@@ -23,14 +23,25 @@ import json
 import logging
 import os
 from datetime import date, timedelta
+from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from app import db, ingestion, cleaning, forecasting, confidence, profit, llm, delivery
+from app import (
+    db,
+    ingestion,
+    cleaning,
+    forecasting,
+    confidence,
+    profit,
+    llm,
+    delivery,
+    payload_schema as payload_contract,
+    replay_artifacts,
+)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -39,7 +50,162 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
-DEV_MODE = os.environ.get("DEV_MODE", "false").lower() == "true"
+
+def _parse_bool_env(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if raw == "":
+        return default
+    return raw in {"1", "true", "yes", "y", "on"}
+
+
+def _parse_float_env(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip()
+    if raw == "":
+        return default
+    try:
+        return float(raw)
+    except ValueError as e:
+        raise ValueError(f"Invalid float for {name}: {raw!r}") from e
+
+
+def _is_dev_mode() -> bool:
+    return _parse_bool_env("DEV_MODE", False)
+
+
+def _is_replay_mode() -> bool:
+    return _parse_bool_env("REPLAY_MODE", False)
+
+
+def _strict_no_future_data() -> bool:
+    return _parse_bool_env("REPLAY_STRICT_NO_FUTURE", True)
+
+
+def _replay_scenario() -> str:
+    scenario = os.environ.get("REPLAY_SCENARIO", "normal").strip().lower() or "normal"
+    allowed = {"normal", "missing_input", "spike", "drop"}
+    if scenario not in allowed:
+        raise ValueError(
+            f"Invalid REPLAY_SCENARIO={scenario!r}. Allowed: {sorted(allowed)}"
+        )
+    return scenario
+
+
+def _resolve_effective_run_date(run_date: date | None) -> date:
+    if run_date is not None:
+        return run_date
+    if _is_replay_mode():
+        cursor = os.environ.get("REPLAY_CURSOR_DATE", "").strip()
+        if cursor:
+            try:
+                return date.fromisoformat(cursor)
+            except ValueError as e:
+                raise ValueError(
+                    f"Invalid REPLAY_CURSOR_DATE={cursor!r}. Use YYYY-MM-DD."
+                ) from e
+    return date.today()
+
+
+def _apply_no_future_guard(raw_df: pd.DataFrame, run_date: date) -> pd.DataFrame:
+    if raw_df.empty:
+        return raw_df
+    if not _is_replay_mode() and not _strict_no_future_data():
+        return raw_df
+
+    ts = pd.to_datetime(raw_df["ds"], errors="coerce")
+    keep_mask = ts <= pd.Timestamp(run_date)
+    dropped = int((~keep_mask).sum())
+    out = raw_df.loc[keep_mask].reset_index(drop=True)
+    if dropped > 0:
+        logger.info(
+            f"No-future-data guard dropped {dropped} row(s) newer than cursor {run_date}."
+        )
+    return out
+
+
+def _apply_replay_scenario(raw_df: pd.DataFrame, run_date: date) -> tuple[pd.DataFrame, bool]:
+    """
+    Apply replay scenario transform.
+
+    Returns:
+      (transformed_df, force_no_new_data)
+    """
+    if not _is_replay_mode():
+        return raw_df, False
+
+    scenario = _replay_scenario()
+    if raw_df.empty:
+        return raw_df, scenario == "missing_input"
+
+    out = raw_df.copy()
+    if scenario == "normal":
+        return out, False
+
+    if scenario == "missing_input":
+        logger.info("[REPLAY_MODE] Scenario=missing_input: forcing has_new_data=False")
+        return out, True
+
+    ds_series = pd.to_datetime(out["ds"], errors="coerce").dt.date
+    on_cursor = ds_series == run_date
+    affected = int(on_cursor.sum())
+    if affected == 0:
+        logger.info(f"[REPLAY_MODE] Scenario={scenario}: no rows on cursor date {run_date}")
+        return out, False
+
+    if scenario == "spike":
+        factor = max(_parse_float_env("REPLAY_SPIKE_MULTIPLIER", 2.0), 1.0)
+        out.loc[on_cursor, "qty_sold"] = pd.to_numeric(
+            out.loc[on_cursor, "qty_sold"], errors="coerce"
+        ).fillna(0.0) * factor
+        logger.info(
+            f"[REPLAY_MODE] Scenario=spike applied to {affected} row(s) at {run_date} with factor={factor:.2f}"
+        )
+        return out, False
+
+    # scenario == "drop"
+    factor = _parse_float_env("REPLAY_DROP_MULTIPLIER", 0.3)
+    factor = min(max(factor, 0.0), 1.0)
+    out.loc[on_cursor, "qty_sold"] = pd.to_numeric(
+        out.loc[on_cursor, "qty_sold"], errors="coerce"
+    ).fillna(0.0) * factor
+    logger.info(
+        f"[REPLAY_MODE] Scenario=drop applied to {affected} row(s) at {run_date} with factor={factor:.2f}"
+    )
+    return out, False
+
+
+def _cursor_state_path(override: str | None = None) -> Path:
+    if override and override.strip():
+        return Path(override).expanduser()
+    env_path = os.environ.get("REPLAY_CURSOR_STATE_PATH", "").strip()
+    if env_path:
+        return Path(env_path).expanduser()
+    return Path(__file__).resolve().parents[1] / "outputs" / "replay_cursor_state.json"
+
+
+def _load_cursor_state(path: Path) -> date | None:
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        raw = str(data.get("cursor_date", "")).strip()
+        return date.fromisoformat(raw) if raw else None
+    except Exception:
+        return None
+
+
+def _save_cursor_state(path: Path, cursor_date: date) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "cursor_date": cursor_date.isoformat(),
+        "updated_at_utc": pd.Timestamp.utcnow().isoformat(),
+    }
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _step_cursor_date(base_date: date, step_days: int) -> date:
+    if step_days not in (0, 1, 7):
+        raise ValueError("step_days must be one of: 0, 1, 7")
+    return base_date + timedelta(days=step_days)
 
 
 # ── Trend & stockout ──────────────────────────────────────────────────────────
@@ -61,6 +227,43 @@ def _compute_trend(sku: str, daily_df: pd.DataFrame, next_pred: float) -> tuple[
         trend = "stable"
     stockout = pd.notna(next_pred) and last7 > 0 and next_pred > last7 * 1.15
     return trend, bool(stockout)
+
+
+def _maybe_write_replay_artifacts(
+    *,
+    owner_id: str,
+    run_date: date,
+    status: str,
+    payload: dict,
+    raw_rows: int | None,
+    clean_rows: int | None,
+    missing_days: int,
+    has_new_data: bool,
+    delivery_ok: bool | None,
+    results_df: pd.DataFrame | None,
+) -> None:
+    if not replay_artifacts.artifacts_enabled(_is_dev_mode()):
+        return
+    metrics = replay_artifacts.build_metrics(
+        owner_id=str(owner_id),
+        run_date=run_date,
+        status=status,
+        payload=payload,
+        raw_rows=raw_rows,
+        clean_rows=clean_rows,
+        missing_days=missing_days,
+        has_new_data=has_new_data,
+        delivery_ok=delivery_ok,
+        results_df=results_df,
+    )
+    out_dir = replay_artifacts.write_run_artifacts(
+        owner_id=str(owner_id),
+        run_date=run_date,
+        payload=payload,
+        metrics=metrics,
+        results_df=results_df,
+    )
+    logger.info(f"Replay artifacts saved: {out_dir}")
 
 
 # ── Payload builder ───────────────────────────────────────────────────────────
@@ -100,7 +303,7 @@ def _build_payload(
             "sku":      r["sku"],
             "sku_name": r.get("sku_name", r["sku"]),
             "reason":   r["pre_gate_reason"],
-            "tier":     r["today_tier"],
+            "tier":     "red",
             "gap_days": int(r["today_gap_days"]),
         }
         for _, r in skipped.iterrows()
@@ -131,8 +334,8 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
     Run the full nightly pipeline for one account.
     Returns the payload dict (whether saved to Supabase or not).
     """
-    if run_date is None:
-        run_date = date.today()
+    run_date = _resolve_effective_run_date(run_date)
+    dev_mode = _is_dev_mode()
 
     owner_id = account["id"]
     phone    = account["whatsapp_number"]
@@ -140,6 +343,8 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
     missing  = int(account.get("consecutive_missing_days", 0))
 
     logger.info(f"--- Starting pipeline for owner '{name}' ({owner_id}) ---")
+    if _is_replay_mode():
+        logger.info(f"[REPLAY_MODE] Cursor date: {run_date}")
 
     # ── 1. Ingest ─────────────────────────────────────────────────────────────
     try:
@@ -147,6 +352,8 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
     except Exception as e:
         logger.error(f"Ingestion failed for {owner_id}: {e}")
         raise
+    raw_df = _apply_no_future_guard(raw_df, run_date)
+    raw_df, force_no_new_data = _apply_replay_scenario(raw_df, run_date)
 
     # ── 2. Check for new data ─────────────────────────────────────────────────
     last_received = account.get("last_data_received_at")
@@ -154,14 +361,16 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
         last_received is None
         or raw_df["ds"].max() > pd.Timestamp(last_received).date()
     )
+    if force_no_new_data:
+        has_new_data = False
 
     if has_new_data:
         missing = 0
-        if not DEV_MODE:
+        if not dev_mode:
             db.update_last_data_received(owner_id)
     else:
         missing += 1
-        if not DEV_MODE:
+        if not dev_mode:
             db.update_missing_days(owner_id, missing)
 
     logger.info(f"New data: {has_new_data} | Consecutive missing days: {missing}")
@@ -177,8 +386,8 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
             "Prediksi tidak bisa dibuat dulu — yuk mulai catat lagi hari ini!\n\n"
             "_— PIVO otomatis mengirim pesan ini setiap hari_"
         )
-        delivery.send_wa(phone, reminder_msg)
-        if not DEV_MODE:
+        delivery_ok = delivery.send_wa(phone, reminder_msg)
+        if not dev_mode:
             db.log_reminder(owner_id, escalation)
         logger.info(f"Missing 7+ days — reminder sent, skipping forecast.")
         # Save a Red payload so the PWA still shows something
@@ -195,7 +404,20 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
             "pwa_url":                 f"pivo.app/u/{owner_id}",
             "skipped_skus":            [],
         }
-        if not DEV_MODE:
+        payload_contract.validate_payload(payload, context="missing_data_payload")
+        _maybe_write_replay_artifacts(
+            owner_id=owner_id,
+            run_date=run_date,
+            status="missing_data_skip",
+            payload=payload,
+            raw_rows=len(raw_df),
+            clean_rows=None,
+            missing_days=missing,
+            has_new_data=has_new_data,
+            delivery_ok=delivery_ok,
+            results_df=None,
+        )
+        if not dev_mode:
             db.upsert_daily_payload(owner_id, run_date, payload, "red")
         return payload
 
@@ -246,6 +468,7 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
         account, run_date, results_df, profit_rows, anomaly_flags,
         wa_message="", daily_df=daily_df, missing_days=missing
     )
+    payload_contract.validate_payload(partial_payload, context="partial_payload_for_llm")
     wa_message = llm.generate_wa_message(partial_payload) + reminder_suffix
 
     # ── 9. Final payload ──────────────────────────────────────────────────────
@@ -253,17 +476,31 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
         account, run_date, results_df, profit_rows, anomaly_flags,
         wa_message=wa_message, daily_df=daily_df, missing_days=missing
     )
+    payload_contract.validate_payload(payload, context="final_payload")
 
     # ── 10. Deliver ───────────────────────────────────────────────────────────
-    delivery.send_wa(phone, wa_message)
+    delivery_ok = delivery.send_wa(phone, wa_message)
 
     if missing >= 1:
-        if not DEV_MODE:
+        if not dev_mode:
             escalation = 1 if missing <= 2 else 2
             db.log_reminder(owner_id, escalation)
 
+    _maybe_write_replay_artifacts(
+        owner_id=owner_id,
+        run_date=run_date,
+        status="ok",
+        payload=payload,
+        raw_rows=len(raw_df),
+        clean_rows=len(daily_df),
+        missing_days=missing,
+        has_new_data=has_new_data,
+        delivery_ok=delivery_ok,
+        results_df=results_df,
+    )
+
     # ── 11. Persist ───────────────────────────────────────────────────────────
-    if DEV_MODE:
+    if dev_mode:
         logger.info(f"[DEV_MODE] Payload preview:\n{json.dumps(payload, indent=2, default=str)[:1500]}...")
     else:
         db.upsert_daily_payload(
@@ -276,10 +513,10 @@ def run_owner(account: dict, run_date: date | None = None) -> dict:
 
 def run_all_owners(run_date: date | None = None) -> None:
     """Run the pipeline for all accounts. Failures are isolated per account."""
-    if run_date is None:
-        run_date = date.today()
+    run_date = _resolve_effective_run_date(run_date)
+    dev_mode = _is_dev_mode()
 
-    if DEV_MODE:
+    if dev_mode:
         logger.info("[DEV_MODE] Supabase reads/writes are disabled.")
         accounts = [{"id": "demo", "name": "Demo Owner", "whatsapp_number": "0812000000",
                      "sheet_id": "", "consecutive_missing_days": 0, "last_data_received_at": None}]
@@ -302,11 +539,51 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run PIVO pipeline locally")
     parser.add_argument("--owner-id", default="demo")
     parser.add_argument("--csv", default=None, help="Path to a local CSV file (dev mode)")
+    parser.add_argument("--run-date", default=None, help="Replay cursor date (YYYY-MM-DD)")
+    parser.add_argument("--replay-mode", action="store_true", help="Enable replay mode")
+    parser.add_argument("--step-days", type=int, choices=[0, 1, 7], default=0, help="Advance replay cursor by days")
+    parser.add_argument("--cursor-state-path", default=None, help="Optional path for replay cursor state JSON")
+    parser.add_argument(
+        "--scenario",
+        choices=["normal", "missing_input", "spike", "drop"],
+        default=None,
+        help="Replay scenario transform to apply on cursor date",
+    )
     args = parser.parse_args()
 
     if args.csv:
         os.environ["DEV_CSV_PATH"] = args.csv
     os.environ["DEV_MODE"] = "true"
+    cli_run_date = None
+    if args.run_date:
+        try:
+            cli_run_date = date.fromisoformat(args.run_date)
+        except ValueError:
+            parser.error("--run-date must use YYYY-MM-DD")
+
+    if args.step_days and not args.replay_mode:
+        parser.error("--step-days requires --replay-mode")
+
+    if args.replay_mode:
+        os.environ["REPLAY_MODE"] = "true"
+        if args.scenario:
+            os.environ["REPLAY_SCENARIO"] = args.scenario
+        state_path = _cursor_state_path(args.cursor_state_path)
+
+        base_cursor = cli_run_date
+        if base_cursor is None:
+            state_cursor = _load_cursor_state(state_path)
+            if state_cursor is not None:
+                base_cursor = state_cursor
+            else:
+                base_cursor = _resolve_effective_run_date(None)
+
+        stepped_cursor = _step_cursor_date(base_cursor, args.step_days)
+        os.environ["REPLAY_CURSOR_DATE"] = stepped_cursor.isoformat()
+        _save_cursor_state(state_path, stepped_cursor)
+        logger.info(f"[REPLAY_MODE] Cursor set to {stepped_cursor} (state: {state_path})")
+        logger.info(f"[REPLAY_MODE] Scenario: {_replay_scenario()}")
+        cli_run_date = stepped_cursor
 
     demo_account = {
         "id":                       args.owner_id,
@@ -317,4 +594,5 @@ if __name__ == "__main__":
         "last_data_received_at":    None,
         "use_real_cogs":            False,
     }
-    run_owner(demo_account)
+    run_owner(demo_account, run_date=cli_run_date)
+
