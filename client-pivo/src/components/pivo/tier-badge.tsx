@@ -7,17 +7,17 @@ type TierBadgeProps = {
 const TIER_COPY: Record<ConfidenceTier, { label: string; note: string; className: string }> = {
   green: {
     label: "Green Confidence",
-    note: "Data stabil. Rekomendasi siap dipakai untuk keputusan harian.",
+    note: "Your recent data is stable. You can use today’s recommendation with higher confidence.",
     className: "border-emerald-300 bg-emerald-100 text-emerald-800",
   },
   yellow: {
     label: "Yellow Confidence",
-    note: "Data masih berkembang. Pakai rekomendasi sebagai estimasi awal.",
+    note: "Your data is still developing. Use this recommendation as a practical estimate.",
     className: "border-[var(--pivo-amber)]/40 bg-[var(--pivo-amber)]/15 text-amber-900",
   },
   red: {
     label: "Red Confidence",
-    note: "Data belum cukup. Fokus catat penjualan agar prediksi kembali aktif.",
+    note: "There is not enough recent data yet. Keep logging sales to reactivate stronger predictions.",
     className: "border-[var(--pivo-coral)]/45 bg-[var(--pivo-coral)]/15 text-[var(--pivo-coral-ink)]",
   },
 };

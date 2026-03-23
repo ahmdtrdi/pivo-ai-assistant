@@ -171,7 +171,7 @@ export const DEMO_PAYLOAD: PivoPayload = {
   ],
   anomaly_flags: ["margin_drop_nasi_goreng", "stockout_risk_kopi_susu"],
   wa_message:
-    "Prediksi awal: Kopi Susu sekitar 45 cup besok. Terus catat supaya makin akurat.",
+    "Early estimate: prepare around 45 cups of Kopi Susu tomorrow. Keep recording sales to improve accuracy.",
   pwa_url: "pivo.app/u/demo",
   skipped_skus: [],
   history_30d: HISTORY_30D,

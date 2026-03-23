@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-[var(--pivo-primary)] text-slate-900">{children}</body>
     </html>
   );

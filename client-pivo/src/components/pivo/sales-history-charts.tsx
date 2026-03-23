@@ -30,7 +30,7 @@ type SalesHistoryChartsProps = {
 function formatDateTick(isoDate: string): string {
   const date = new Date(`${isoDate}T00:00:00Z`);
 
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "short",
   }).format(date);
@@ -64,7 +64,7 @@ export function SalesHistoryCharts({ rows }: SalesHistoryChartsProps) {
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-base font-semibold text-slate-900">Sales History</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Data history 30 hari belum tersedia di payload. Setelah backend mengirim `history_30d`, chart akan tampil otomatis.
+          No 30-day history data is available yet. Keep recording daily sales to unlock trend charts.
         </p>
       </section>
     );
@@ -79,11 +79,11 @@ export function SalesHistoryCharts({ rows }: SalesHistoryChartsProps) {
       <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">Qty Sold - Last 30 Days</h2>
-            <p className="text-sm text-slate-600">Per SKU, update harian untuk membaca pola permintaan.</p>
+            <h2 className="text-base font-semibold text-slate-900">Quantity Sold - Last 30 Days</h2>
+            <p className="text-sm text-slate-600">Track daily demand movement by product.</p>
           </div>
           <label className="text-sm text-slate-700">
-            <span className="mb-1 block font-medium">Pilih SKU</span>
+            <span className="mb-1 block font-medium">Select product</span>
             <select
               className="w-full min-w-44 rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
               value={currentSku.sku}
@@ -126,8 +126,8 @@ export function SalesHistoryCharts({ rows }: SalesHistoryChartsProps) {
       </article>
 
       <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-900">Gross Profit Comparison</h2>
-        <p className="text-sm text-slate-600">Perbandingan total gross profit 7 hari terakhir vs 7 hari sebelumnya.</p>
+        <h2 className="text-base font-semibold text-slate-900">Gross Profit - This Week vs Last Week</h2>
+        <p className="text-sm text-slate-600">Compare weekly profitability trend at a glance.</p>
 
         <div className="mt-4 h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">

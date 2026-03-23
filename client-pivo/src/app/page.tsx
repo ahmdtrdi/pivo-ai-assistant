@@ -7,8 +7,7 @@ export default function HomePage() {
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pivo-blue)]">PIVO</p>
         <h1 className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-5xl">From Data to Daily Decisions</h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-700 sm:text-base">
-          Dashboard dan Supply Simulator sudah siap dipakai untuk tahap pertama implementasi frontend.
-          Buka halaman owner untuk membaca payload harian dari Supabase.
+          Open your owner workspace to review today’s recommendation, run production simulation, check sales history, and manage settings.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
@@ -16,15 +15,17 @@ export default function HomePage() {
             href="/u/demo"
             className="rounded-xl bg-[var(--pivo-navy)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--pivo-blue)]"
           >
-            Open Demo Owner
+            Open Demo Workspace
           </Link>
           <Link
-            href="/u/demo/history"
+            href="/u/demo/simulator"
             className="rounded-xl border border-[var(--pivo-navy)]/30 bg-white px-4 py-2 text-sm font-semibold text-[var(--pivo-navy)] transition hover:bg-[var(--pivo-primary)]"
           >
-            Open Sales History
+            Open Simulator
           </Link>
-          <span className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600">Route format: /u/&lt;owner_id&gt;</span>
+          <span className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600">
+            Route format: /u/&lt;owner_id&gt;
+          </span>
         </div>
       </section>
     </main>

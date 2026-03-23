@@ -47,9 +47,9 @@ function computeResult(option: SimulatorOption, unitsPrepared: number): Simulato
 }
 
 const CONDITION_COPY: Record<SimulatorResult["condition"], string> = {
-  exact: "Persiapan pas dengan demand prediksi.",
-  under: "Persiapan kurang. Risiko kehilangan peluang penjualan.",
-  over: "Persiapan berlebih. Biaya waste mulai naik.",
+  exact: "Preparation matches expected demand.",
+  under: "You are preparing too little and may miss potential sales.",
+  over: "You are preparing too much and waste cost is increasing.",
 };
 
 export function SupplySimulator({ options }: SupplySimulatorProps) {
@@ -67,7 +67,7 @@ export function SupplySimulator({ options }: SupplySimulatorProps) {
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-base font-semibold text-slate-900">Supply Simulator</h2>
         <p className="mt-2 text-sm text-slate-600">
-          Simulator aktif saat payload memiliki data prediksi SKU (`forecasts`) dan biaya (`unit_cost`).
+          This section becomes available when your payload includes forecast data and product cost data.
         </p>
       </section>
     );
@@ -79,11 +79,13 @@ export function SupplySimulator({ options }: SupplySimulatorProps) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <h2 className="text-base font-semibold text-slate-900">Supply Simulator</h2>
-      <p className="mt-1 text-sm text-slate-600">From data to daily decisions: uji rencana produksi sebelum eksekusi.</p>
+      <p className="mt-1 text-sm text-slate-600">
+        Plan your production before execution and compare risk in real time.
+      </p>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <label className="space-y-1.5 text-sm text-slate-700">
-          <span className="font-medium">Pilih SKU</span>
+          <span className="font-medium">Select product</span>
           <select
             value={selectedOption.sku}
             onChange={(event) => {
@@ -105,7 +107,7 @@ export function SupplySimulator({ options }: SupplySimulatorProps) {
 
         <div className="rounded-xl bg-[var(--pivo-primary)] px-3 py-2 text-sm text-slate-700">
           <p>
-            Demand baseline: <strong>{formatNumber(selectedOption.qtyMid)}</strong> unit
+            Expected demand: <strong>{formatNumber(selectedOption.qtyMid)}</strong> units
           </p>
           <p>
             Margin per unit: <strong>{formatIdr(selectedOption.unitPrice - selectedOption.unitCost)}</strong>
@@ -129,11 +131,11 @@ export function SupplySimulator({ options }: SupplySimulatorProps) {
             setUnitsPrepared(Number(event.target.value));
           }}
         />
-        <p className="mt-1 text-xs text-slate-500">Rentang simulasi 0 sampai {formatNumber(maxUnits)} unit.</p>
+        <p className="mt-1 text-xs text-slate-500">Simulation range: 0 to {formatNumber(maxUnits)} units.</p>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <article className="rounded-xl bg-[var(--pivo-navy)] text-white p-3">
+        <article className="rounded-xl bg-[var(--pivo-navy)] p-3 text-white">
           <p className="text-xs uppercase tracking-wide text-white/80">Estimated Profit</p>
           <p className="mt-1 text-sm font-semibold">{formatIdr(result.expectedProfit)}</p>
         </article>
@@ -147,7 +149,9 @@ export function SupplySimulator({ options }: SupplySimulatorProps) {
         </article>
       </div>
 
-      <p className="mt-3 rounded-xl bg-[var(--pivo-blue)]/12 px-3 py-2 text-sm text-slate-700">{CONDITION_COPY[result.condition]}</p>
+      <p className="mt-3 rounded-xl bg-[var(--pivo-blue)]/12 px-3 py-2 text-sm text-slate-700">
+        {CONDITION_COPY[result.condition]}
+      </p>
     </section>
   );
 }
