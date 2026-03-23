@@ -13,7 +13,7 @@ const TREND_LABEL: Record<ForecastItem["trend"], string> = {
 
 export function ForecastCard({ forecast }: ForecastCardProps) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <article className="h-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-slate-900">{forecast.sku_name}</h3>

@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: "PIVO | From Data to Daily Decisions",
   description:
     "PIVO helps MSME owners turn daily sales records into practical production and profit decisions.",
+  icons: {
+    icon: "/pivo.svg",
+    shortcut: "/pivo.svg",
+    apple: "/pivo.svg",
+  },
 };
 
 export default function RootLayout({

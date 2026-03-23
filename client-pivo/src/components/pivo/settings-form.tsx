@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { CsvUploadCard } from "@/components/pivo/csv-upload-card";
+
 type SettingsFormProps = {
   ownerId: string;
 };
@@ -12,7 +14,11 @@ type FormState = {
   businessName: string;
   whatsappNumber: string;
   sheetUrl: string;
-  posName: string;
+  sheetTabName: string;
+  posProvider: string;
+  posBaseUrl: string;
+  posToken: string;
+  posOutletId: string;
   dataSource: DataSource;
 };
 
@@ -23,9 +29,19 @@ function initialState(ownerId: string): FormState {
       .replace(/\b\w/g, (char) => char.toUpperCase()),
     whatsappNumber: "",
     sheetUrl: "",
-    posName: "",
+    sheetTabName: "",
+    posProvider: "",
+    posBaseUrl: "",
+    posToken: "",
+    posOutletId: "",
     dataSource: "google_sheet",
   };
+}
+
+function panelClass(active: boolean): string {
+  return active
+    ? "rounded-xl border border-[var(--pivo-blue)]/35 bg-[var(--pivo-blue)]/10 p-4"
+    : "rounded-xl border border-slate-200 bg-slate-50 p-4";
 }
 
 export function SettingsForm({ ownerId }: SettingsFormProps) {
@@ -85,29 +101,125 @@ export function SettingsForm({ ownerId }: SettingsFormProps) {
           </select>
         </label>
 
-        <label className="grid gap-1 text-sm text-slate-700">
-          <span className="font-medium">Google Sheet URL (optional)</span>
-          <input
-            value={form.sheetUrl}
-            onChange={(event) => {
-              setForm((prev) => ({ ...prev, sheetUrl: event.target.value }));
-            }}
-            className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
-            placeholder="https://docs.google.com/spreadsheets/..."
-          />
-        </label>
+        <section className={panelClass(form.dataSource === "google_sheet")}>
+          <h3 className="text-sm font-semibold text-slate-900">Google Sheet connection</h3>
+          <p className="mt-1 text-sm text-slate-600">Use this when your cashier exports sales into a shared spreadsheet.</p>
 
-        <label className="grid gap-1 text-sm text-slate-700">
-          <span className="font-medium">POS system name (optional)</span>
-          <input
-            value={form.posName}
-            onChange={(event) => {
-              setForm((prev) => ({ ...prev, posName: event.target.value }));
-            }}
-            className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
-            placeholder="Moka, Majoo, Pawoon, etc."
-          />
-        </label>
+          {form.dataSource === "google_sheet" ? (
+            <div className="mt-3 grid gap-3">
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium">Google Sheet URL</span>
+                <input
+                  value={form.sheetUrl}
+                  onChange={(event) => {
+                    setForm((prev) => ({ ...prev, sheetUrl: event.target.value }));
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
+                  placeholder="https://docs.google.com/spreadsheets/..."
+                />
+              </label>
+
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium">Worksheet/tab name (optional)</span>
+                <input
+                  value={form.sheetTabName}
+                  onChange={(event) => {
+                    setForm((prev) => ({ ...prev, sheetTabName: event.target.value }));
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
+                  placeholder="March 2026 Sales"
+                />
+              </label>
+            </div>
+          ) : null}
+        </section>
+
+        <section className={panelClass(form.dataSource === "pos_connector")}>
+          <h3 className="text-sm font-semibold text-slate-900">POS API connection</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Most POS providers require credentials, not only a link. Standard inputs are API token plus outlet/store ID.
+          </p>
+
+          {form.dataSource === "pos_connector" ? (
+            <div className="mt-3 grid gap-3">
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium">POS provider</span>
+                <select
+                  value={form.posProvider}
+                  onChange={(event) => {
+                    setForm((prev) => ({ ...prev, posProvider: event.target.value }));
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
+                >
+                  <option value="">Select provider</option>
+                  <option value="moka">Moka</option>
+                  <option value="majoo">Majoo</option>
+                  <option value="pawoon">Pawoon</option>
+                  <option value="olsera">Olsera</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium">API base URL (optional)</span>
+                <input
+                  value={form.posBaseUrl}
+                  onChange={(event) => {
+                    setForm((prev) => ({ ...prev, posBaseUrl: event.target.value }));
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
+                  placeholder="https://api.provider.com/v1"
+                />
+              </label>
+
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium">API token / secret key</span>
+                <input
+                  type="password"
+                  value={form.posToken}
+                  onChange={(event) => {
+                    setForm((prev) => ({ ...prev, posToken: event.target.value }));
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
+                  placeholder="Enter credential from POS admin"
+                />
+              </label>
+
+              <label className="grid gap-1 text-sm text-slate-700">
+                <span className="font-medium">Outlet/store ID</span>
+                <input
+                  value={form.posOutletId}
+                  onChange={(event) => {
+                    setForm((prev) => ({ ...prev, posOutletId: event.target.value }));
+                  }}
+                  className="rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-[var(--pivo-blue)]"
+                  placeholder="outlet-001"
+                />
+              </label>
+
+              <p className="rounded-lg bg-white px-3 py-2 text-sm text-slate-600">
+                Integration note: If a provider supports OAuth, this section will later be replaced by a &quot;Connect POS&quot;
+                button. For now we keep a universal token + outlet format.
+              </p>
+            </div>
+          ) : null}
+        </section>
+
+        <section className={panelClass(form.dataSource === "monthly_csv")}>
+          <h3 className="text-sm font-semibold text-slate-900">Monthly CSV upload</h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Use this when sales data is exported manually from cashier/POS every month.
+          </p>
+
+          {form.dataSource === "monthly_csv" ? (
+            <CsvUploadCard
+              className="mt-3 border-slate-300"
+              title="Upload monthly CSV file"
+              description="Upload one monthly sales CSV and we will validate structure before backend processing."
+              inputId="monthly-csv-upload"
+            />
+          ) : null}
+        </section>
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <button
