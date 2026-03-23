@@ -8,6 +8,13 @@ type CsvSummary = {
   columns: string[];
 };
 
+type CsvUploadCardProps = {
+  title?: string;
+  description?: string;
+  className?: string;
+  inputId?: string;
+};
+
 function parseCsvSummary(text: string, fileName: string): CsvSummary {
   const lines = text
     .split(/\r?\n/)
@@ -27,7 +34,12 @@ function parseCsvSummary(text: string, fileName: string): CsvSummary {
   };
 }
 
-export function CsvUploadCard() {
+export function CsvUploadCard({
+  title = "Upload Monthly CSV",
+  description = "Upload your latest POS CSV export to quickly validate file structure before processing.",
+  className = "",
+  inputId = "csv-upload",
+}: CsvUploadCardProps) {
   const [summary, setSummary] = useState<CsvSummary | null>(null);
   const [error, setError] = useState<string>("");
 
@@ -40,18 +52,16 @@ export function CsvUploadCard() {
   }, [summary]);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="text-base font-semibold text-slate-900">Upload Monthly CSV</h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Upload your latest POS CSV export to quickly validate file structure before processing.
-      </p>
+    <section className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}>
+      <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+      <p className="mt-1 text-sm text-slate-600">{description}</p>
 
       <div className="mt-4 rounded-xl border border-dashed border-[var(--pivo-blue)]/40 bg-[var(--pivo-primary)] p-4">
-        <label className="block text-sm font-medium text-slate-700" htmlFor="csv-upload">
+        <label className="block text-sm font-medium text-slate-700" htmlFor={inputId}>
           Select CSV file
         </label>
         <input
-          id="csv-upload"
+          id={inputId}
           type="file"
           accept=".csv,text/csv"
           className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"

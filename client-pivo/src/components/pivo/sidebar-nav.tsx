@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 type SidebarNavProps = {
   ownerId: string;
+  onNavigate?: () => void;
 };
 
 type NavItem = {
@@ -29,17 +31,24 @@ function navClass(active: boolean): string {
   return "border-transparent bg-white text-slate-700 hover:border-[var(--pivo-blue)]/35 hover:bg-[var(--pivo-primary)]";
 }
 
-export function SidebarNav({ ownerId }: SidebarNavProps) {
+export function SidebarNav({ ownerId, onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
   const items = getItems(ownerId);
 
   return (
-    <aside className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pivo-blue)]">PIVO</p>
-      <h2 className="mt-2 text-xl font-bold text-slate-900">Control Panel</h2>
-      <p className="mt-1 text-sm leading-relaxed text-slate-600">From data to daily decisions.</p>
+    <aside className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+      <div className="rounded-2xl bg-[var(--pivo-primary)]/70 px-2 py-3">
+        <Image
+          src="/dashboard-pivo.svg"
+          alt="PIVO dashboard"
+          width={220}
+          height={56}
+          priority
+          className="h-auto w-full max-w-[190px]"
+        />
+      </div>
 
-      <nav className="mt-4 space-y-2">
+      <nav className="mt-5 space-y-2">
         {items.map((item) => {
           const active = pathname === item.href;
 
@@ -47,6 +56,7 @@ export function SidebarNav({ ownerId }: SidebarNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`block rounded-xl border px-3 py-2 text-sm font-medium transition ${navClass(active)}`}
             >
               {item.label}
@@ -55,10 +65,7 @@ export function SidebarNav({ ownerId }: SidebarNavProps) {
         })}
       </nav>
 
-      <div className="mt-auto rounded-xl bg-[var(--pivo-primary)] p-3 text-xs text-slate-600">
-        Owner route
-        <p className="mt-1 font-mono text-[11px] text-slate-700">/u/{ownerId}</p>
-      </div>
+      <p className="mt-auto px-2 pt-6 text-xs text-slate-500">Copyright 2026</p>
     </aside>
   );
 }

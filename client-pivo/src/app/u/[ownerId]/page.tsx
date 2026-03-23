@@ -1,7 +1,7 @@
 import { AlertsPanel } from "@/components/pivo/alerts-panel";
-import { CsvUploadCard } from "@/components/pivo/csv-upload-card";
+import { DailyDecisionBrief } from "@/components/pivo/daily-decision-brief";
 import { ForecastCard } from "@/components/pivo/forecast-card";
-import { TierBadge } from "@/components/pivo/tier-badge";
+import { SocialTrendCard } from "@/components/pivo/social-trend-card";
 import { TopProfitList } from "@/components/pivo/top-profit-list";
 import { getMarginAlerts, getRankGapInsights, getTopProfits } from "@/lib/dashboard";
 import { titleCaseFromId } from "@/lib/format";
@@ -22,55 +22,43 @@ export default async function OwnerDashboardPage({ params }: OwnerDashboardPageP
   const marginAlerts = getMarginAlerts(profitRows);
   const rankGapInsights = getRankGapInsights(profitRows);
   const displayOwnerName = titleCaseFromId(ownerId);
+  const greetingName = ownerId === "demo" ? "Rina" : displayOwnerName;
 
   return (
     <section className="space-y-6">
-      <section className="overflow-hidden rounded-3xl border border-[var(--pivo-blue)]/25 bg-gradient-to-br from-white via-[var(--pivo-primary)] to-[var(--pivo-blue)]/10 p-5 shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pivo-blue)]">Dashboard</p>
-            <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">{displayOwnerName}</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700 sm:text-base">
-              Get a clear recommendation for what to prepare today, which products drive profit, and what needs attention.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-              <span className="rounded-full bg-white px-3 py-1">Date: {payload.date}</span>
-              <span className="rounded-full bg-white px-3 py-1">Owner ID: {payload.owner_id}</span>
-            </div>
-          </div>
+      <DailyDecisionBrief ownerName={greetingName} payload={payload} topProfit={topProfits[0]} marginAlerts={marginAlerts} />
 
-          <div className="w-full max-w-sm">
-            <TierBadge tier={payload.confidence_tier} />
-          </div>
+      <section className="grid gap-4 xl:grid-cols-12">
+        <div className="xl:col-span-7">
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900">Daily Production Recommendations</h2>
+
+            {payload.forecasts.length === 0 ? (
+              <div className="mt-3 rounded-2xl border border-[var(--pivo-coral)]/35 bg-[var(--pivo-coral)]/10 p-4 text-sm text-[var(--pivo-coral-ink)]">
+                No SKU prediction is available today yet. Continue recording daily sales to reactivate forecasting.
+              </div>
+            ) : (
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {payload.forecasts.map((forecast) => (
+                  <ForecastCard key={forecast.sku} forecast={forecast} />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <div className="xl:col-span-5">
+          <SocialTrendCard />
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">Daily Production Recommendations</h2>
-
-          {payload.forecasts.length === 0 ? (
-            <div className="rounded-2xl border border-[var(--pivo-coral)]/35 bg-[var(--pivo-coral)]/10 p-4 text-sm text-[var(--pivo-coral-ink)]">
-              No SKU prediction is available today yet. Continue recording daily sales to reactivate forecasting.
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {payload.forecasts.map((forecast) => (
-                <ForecastCard key={forecast.sku} forecast={forecast} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <CsvUploadCard />
-          <TopProfitList rows={topProfits} />
-          <AlertsPanel
-            anomalyFlags={payload.anomaly_flags ?? []}
-            marginAlerts={marginAlerts}
-            rankGapInsights={rankGapInsights}
-          />
-        </div>
+      <section className="grid gap-4 xl:grid-cols-2">
+        <TopProfitList rows={topProfits} />
+        <AlertsPanel
+          anomalyFlags={payload.anomaly_flags ?? []}
+          marginAlerts={marginAlerts}
+          rankGapInsights={rankGapInsights}
+        />
       </section>
     </section>
   );

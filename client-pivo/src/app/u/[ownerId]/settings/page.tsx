@@ -23,16 +23,22 @@ export default async function OwnerSettingsPage({ params }: OwnerSettingsPagePro
         <SettingsForm ownerId={ownerId} />
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-base font-semibold text-slate-900">Integration Checklist</h2>
+          <h2 className="text-base font-semibold text-slate-900">Data Source Playbook</h2>
           <ul className="mt-3 space-y-2 text-sm text-slate-700">
-            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">Connect Google Sheet or POS source</li>
-            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">Set WhatsApp Business destination</li>
-            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">Upload monthly CSV when needed</li>
-            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">Run nightly pipeline from backend scheduler</li>
+            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">
+              Google Sheet mode: connect spreadsheet URL and optional tab name.
+            </li>
+            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">
+              POS API mode: connect with API token/secret + outlet/store ID, and provider base URL when available.
+            </li>
+            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">
+              Monthly CSV mode: upload one monthly file manually when automation is not ready yet.
+            </li>
+            <li className="rounded-lg bg-[var(--pivo-primary)] px-3 py-2">Set WhatsApp Business destination for daily decision delivery.</li>
           </ul>
 
           <p className="mt-4 rounded-xl bg-[var(--pivo-blue)]/12 px-3 py-2 text-sm text-slate-700">
-            Keep these details up to date to improve delivery quality and daily recommendations.
+            Most POS vendors require credentials and outlet mapping. A plain dashboard link is usually not enough for automated pull.
           </p>
         </section>
       </div>
