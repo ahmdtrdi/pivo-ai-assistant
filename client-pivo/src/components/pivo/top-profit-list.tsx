@@ -9,14 +9,14 @@ export function TopProfitList({ rows }: TopProfitListProps) {
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
-        Data profit belum tersedia untuk hari ini.
+        Profit data is not available yet for today.
       </div>
     );
   }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="text-base font-semibold text-slate-900">Top Profit Hari Ini</h2>
+      <h2 className="text-base font-semibold text-slate-900">Top Profit Products</h2>
       <ul className="mt-3 space-y-3">
         {rows.map((row, index) => (
           <li key={row.sku} className="rounded-xl bg-[var(--pivo-primary)] p-3">

@@ -1,5 +1,5 @@
 export function formatIdr(value: number): string {
-  return new Intl.NumberFormat("id-ID", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
@@ -7,7 +7,7 @@ export function formatIdr(value: number): string {
 }
 
 export function formatNumber(value: number): string {
-  return new Intl.NumberFormat("id-ID", {
+  return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,
   }).format(value);
 }

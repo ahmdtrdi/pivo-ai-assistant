@@ -6,9 +6,9 @@ type ForecastCardProps = {
 };
 
 const TREND_LABEL: Record<ForecastItem["trend"], string> = {
-  growing: "Trend naik",
-  stable: "Trend stabil",
-  declining: "Trend menurun",
+  growing: "Demand is rising",
+  stable: "Demand is stable",
+  declining: "Demand is declining",
 };
 
 export function ForecastCard({ forecast }: ForecastCardProps) {
@@ -21,7 +21,7 @@ export function ForecastCard({ forecast }: ForecastCardProps) {
         </div>
         {forecast.stockout_risk ? (
           <span className="rounded-full border border-[var(--pivo-coral)]/50 bg-[var(--pivo-coral)]/10 px-2.5 py-1 text-xs font-semibold text-[var(--pivo-coral-ink)]">
-            Stockout Risk
+            Stockout risk
           </span>
         ) : null}
       </div>
@@ -32,7 +32,7 @@ export function ForecastCard({ forecast }: ForecastCardProps) {
           <p className="font-semibold text-slate-800">{formatNumber(forecast.qty_low)}</p>
         </div>
         <div className="rounded-lg bg-[var(--pivo-navy)]/10 px-2 py-2">
-          <p className="text-xs text-slate-600">Rekomendasi</p>
+          <p className="text-xs text-slate-600">Recommended</p>
           <p className="font-semibold text-[var(--pivo-navy)]">{formatNumber(forecast.qty_mid)}</p>
         </div>
         <div className="rounded-lg bg-[var(--pivo-primary)] px-2 py-2">
