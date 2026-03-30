@@ -1,7 +1,7 @@
 # PIVO AI Assistant
 
 <p align="center">
-  <img src="client-pivo/public/dashboard-pivo-white.svg" alt="PIVO Dashboard" width="860" />
+  <img src="client-pivo/public/dashboard-pivo-white-center.svg" alt="PIVO Dashboard" width="360" />
 </p>
 
 <p align="center">
@@ -116,4 +116,6 @@ Open:
 - Backend flow notes: [`backend-ai/docs/DATA_FLOW.md`](backend-ai/docs/DATA_FLOW.md)
 - Backend detail: [`backend-ai/BE-README.md`](backend-ai/BE-README.md)
 - Frontend baseline notes: [`client-pivo/README.md`](client-pivo/README.md)
+
+
 
